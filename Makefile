@@ -6,9 +6,10 @@ packagewin: all
 	cp SDETool.exe $(folder)
 	cp LICENSE $(folder)
 	cp README.md $(folder)
+	cp scripts/interactive.bat $(folder)
 	mkdir $(folder)/docs
 	cp scripting/lua/lua.md $(folder)/docs
-	zip -r dist/$(folder).zip $(folder)/
+	zip -r dist/$(folder)-windows.zip $(folder)/
 	rm -rf $(folder)
 packagelinux: all
 	mkdir $(folder)
