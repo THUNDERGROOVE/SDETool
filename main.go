@@ -11,6 +11,12 @@ import (
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
 )
 
+var (
+	Version string
+	Branch  string
+	Commit  string
+)
+
 func main() {
 	switch kingpin.MustParse(args.SDETool.Parse(os.Args[1:])) {
 	case args.ListLangs.FullCommand():
@@ -37,6 +43,7 @@ func main() {
 		}
 	default:
 		fmt.Println("SDETool written by Nick Powell; @THUNDERGROOVE")
+		fmt.Printf("Version %v branch %v commit %v\n", Version, Branch, Commit)
 		fmt.Println("Do --help for help")
 	}
 }
