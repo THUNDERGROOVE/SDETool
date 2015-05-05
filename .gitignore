@@ -3,3 +3,5 @@ SDETool
 *.txt
 *.db
 *.zip
+site
+dist

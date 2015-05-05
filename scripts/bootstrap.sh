@@ -1,4 +1,4 @@
-#!bash
+#!/bin/bash
 
 # This script sets up a nice environment for you to work on SDETool
 
