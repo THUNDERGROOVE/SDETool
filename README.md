@@ -1,11 +1,11 @@
-## SDETool
+# SDETool
 
 Okay I'm done writing the plain, go only versions.
 
 This time around SDETool will include built-in scripting capabilities.  
 For now it just has a lua interpreter and to see all of the exposed methods check the docs at <INSERT LINK HERE LATER>
 
-# Contributing
+### Contributing
 
 Want to work on SDETool?  
 
@@ -17,7 +17,7 @@ Want to work on SDETool?
 
 I'll accept it and merge it into the development branch and your changes will likely get merged into master and released shortly after.
 
-# Building on your own
+### Building on your own
 
 Windows instructions:
 
@@ -29,7 +29,7 @@ Windows instructions:
 
 Should have a properly built executable file
 
-# Adding your own language.
+### Adding your own language.
 
 Do you know Golang and have a scripting language that idealy doesn't require cgo?  
 
@@ -41,5 +41,5 @@ I've tried mingw/msys2/cygwin(ew) all are trash when it comes to actually using 
 
 If you do require a dependency that uses cgo, try to use something like go-sqlite3 that keeps the C source and headers within the repository.
 
-# LICENSE
+### LICENSE
 SDETool is released under the MIT license.  Check [LICENSE](http://github.com/THUNDERGROOVE/SDETool) for more details
