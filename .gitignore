@@ -1,5 +1,2 @@
-SDETool
-*.exe
-*.txt
-*.db
-*.zip
+site
+deploy.sh
