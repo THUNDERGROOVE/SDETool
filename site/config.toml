@@ -1,0 +1,7 @@
+baseurl = "http://THUNDERGROOVE.github.io/SDETool/"
+languageCode = "en-us"
+title = "SDETool"
+theme = "hyde-x"
+
+[params]
+	description = "The new-old-new SDETool"
