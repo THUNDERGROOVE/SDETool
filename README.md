@@ -3,7 +3,7 @@
 Okay I'm done writing the plain, go only versions.
 
 This time around SDETool will include built-in scripting capabilities.  
-For now it just has a lua interpreter and to see all of the exposed methods check the docs at <INSERT LINK HERE LATER>
+For now it just has a lua interpreter and to see all of the exposed methods check the [docs](https://github.com/THUNDERGROOVE/SDETool/blob/master/scripting/lua/lua.md)
 
 ### Contributing
 
