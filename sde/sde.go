@@ -150,6 +150,7 @@ func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
 
 		rows.Scan(&nTypeID)
 		value := &SDEType{s, nTypeID, "", make(map[string]interface{})}
+		value.GetAttributes()
 		values = append(values, value)
 	}
 	return values, nil
@@ -189,7 +190,9 @@ func (s *SDE) Search(search string) ([]*SDEType, error) {
 		if err != nil {
 			log.Println("Scan error", err.Error())
 		}
-		values = append(values, &SDEType{s, nTypeID, nTypeName, make(map[string]interface{})})
+		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{})}
+		t.GetAttributes()
+		values = append(values, &t)
 	}
 
 	if len(values) != 0 {

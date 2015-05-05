@@ -15,13 +15,15 @@ func Loader(l *lua.LState) {
 		"getVersions": luar.New(l, getVersions),
 		"loadVersion": luar.New(l, loadVersion),
 		"getTypeByID": luar.New(l, getTypeByID),
-		"search":      luar.New(l, search),
 	}
-	l.SetGlobal("sde", l.NewTable())
-	tbl := l.GetGlobal("sde")
+	tbl := l.NewTable()
+	l.SetGlobal("sde", tbl)
 	for k, v := range exports {
 		l.SetField(tbl, k, v)
 	}
+
+	l.SetFuncs(tbl, map[string]lua.LGFunction{
+		"search": search})
 }
 
 func getVersions() []string {
@@ -54,15 +56,16 @@ func getTypeByID(ID int) sde.SDEType {
 	return sde.SDEType{}
 }
 
-func search(v string) []sde.SDEType {
-	out := make([]sde.SDEType, 0)
-	if d, err := SDE.Search(v); err != nil {
-		fmt.Println("sde.search returned an error:", err.Error())
-	} else {
-		for _, v := range d {
-			out = append(out, *v)
+func search(l *lua.LState) int {
+	v := l.ToString(1)
+	t := l.NewTable()
+	if res, err := SDE.Search(v); err == nil {
+		for _, v := range res {
+			t.Append(luar.New(l, *v))
 		}
-
+	} else {
+		fmt.Println("Error encountered in sde.search:", err.Error())
 	}
-	return out
+	l.Push(t)
+	return 1
 }
