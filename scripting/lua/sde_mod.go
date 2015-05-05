@@ -1,6 +1,7 @@
 package lua
 
 import (
+	"fmt"
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/util/log"
 	"github.com/layeh/gopher-luar"
@@ -14,6 +15,7 @@ func Loader(l *lua.LState) {
 		"getVersions": luar.New(l, getVersions),
 		"loadVersion": luar.New(l, loadVersion),
 		"getTypeByID": luar.New(l, getTypeByID),
+		"search":      luar.New(l, search),
 	}
 	l.SetGlobal("sde", l.NewTable())
 	tbl := l.GetGlobal("sde")
@@ -50,4 +52,17 @@ func getTypeByID(ID int) sde.SDEType {
 	}
 
 	return sde.SDEType{}
+}
+
+func search(v string) []sde.SDEType {
+	out := make([]sde.SDEType, 0)
+	if d, err := SDE.Search(v); err != nil {
+		fmt.Println("sde.search returned an error:", err.Error())
+	} else {
+		for _, v := range d {
+			out = append(out, *v)
+		}
+
+	}
+	return out
 }
