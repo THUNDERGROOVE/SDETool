@@ -1,10 +1,12 @@
 package lua
 
 import (
-	"github.com/THUNDERGROOVE/SDETool/scripting"
+	"fmt"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
+	"github.com/THUNDERGROOVE/SDETool/util"
 	"github.com/THUNDERGROOVE/SDETool/util/log"
 	"github.com/yuin/gopher-lua"
+	"strings"
 )
 
 func init() {
@@ -28,8 +30,19 @@ func (l *Lua) RunString(s string) error {
 }
 
 func (l *Lua) Interpreter() error {
-	log.Println("[LUA] Not implemented")
-	return scripting.InterpreterNotImplemented
+	fmt.Println("Lua interpreter; type 'exit' to quit.")
+	for {
+		fmt.Printf("                                       \r> ")
+		in := util.RawInput()
+		if strings.ToLower(in) == "exit" {
+			fmt.Printf("\n")
+			break
+		}
+		if err := l.state.DoString(in); err != nil {
+			fmt.Println("Error encountered:", err.Error())
+		}
+	}
+	return nil
 }
 
 func (l *Lua) Init() error {

@@ -42,8 +42,6 @@ func (s *SDEType) GetAttributes() error {
 		s.parentSDE = PrimarySDE
 	}
 
-	defer Debug(time.Now())
-
 	if s.parentSDE == nil {
 		if PrimarySDE == nil {
 			log.Println("Primary SDE not set.  Returning error")
