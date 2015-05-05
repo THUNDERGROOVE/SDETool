@@ -1,3 +1,5 @@
 SDETool
 *.exe
 *.txt
+*.db
+*.zip
