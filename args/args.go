@@ -14,5 +14,13 @@ var (
 	Interpreter     = SDETool.Command("interpreter", "Opens an interpreter for the given language; Defaults to lua")
 	InterpreterLang = Interpreter.Arg("lang", "Language to start an interpreter with").Default("lua").String()
 
+	Lookup     = SDETool.Command("lookup", "Looks up a type")
+	LookupTID  = Lookup.Arg("typeID", "A TypeID to look for").Int()
+	LookupAttr = Lookup.Arg("attr", "Print attributes of type").Bool()
+
+	Search       = SDETool.Command("search", "Used to search for a type")
+	SearchString = Search.Arg("str", "The string used to search with").String()
+	SearchQuick  = Search.Arg("quick", "Don't get all attributes for every type").Bool()
+
 	ListLangs = SDETool.Command("langs", "Lists the compiled in langs")
 )

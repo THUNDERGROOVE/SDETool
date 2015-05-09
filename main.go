@@ -5,6 +5,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool/args"
 	"github.com/THUNDERGROOVE/SDETool/scripting"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
+	"github.com/THUNDERGROOVE/SDETool/sde"
 	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
 	// Langs
@@ -18,6 +19,12 @@ var (
 )
 
 func main() {
+	var Type *sde.SDEType
+	SDE, err := sde.Open("1.0-WL")
+	if err != nil {
+		fmt.Println("Couldn't open the SDE", err.Error())
+		os.Exit(1)
+	}
 	switch kingpin.MustParse(args.SDETool.Parse(os.Args[1:])) {
 	case args.ListLangs.FullCommand():
 		fmt.Println("Compiled in languages: ")
@@ -39,6 +46,41 @@ func main() {
 				fmt.Printf("The language %v does not implement an interpreter.\n", *args.InterpreterLang)
 			} else {
 				fmt.Printf("The following error occured while in the interpreter %v\n", err.Error())
+			}
+		}
+	case args.Lookup.FullCommand():
+		if *args.LookupTID != 0 {
+			t, err := SDE.GetType(*args.LookupTID)
+			if err == nil {
+				Type = &t
+			} else {
+				fmt.Println("Couldn't find the type:", *args.LookupTID)
+				os.Exit(1)
+			}
+		}
+		if Type != nil {
+			if *args.LookupAttr {
+				fmt.Printf("Attributes for:\n  %v | %v | %v\n", Type.GetName(), Type.TypeID, Type.TypeName)
+				for k, v := range Type.Attributes {
+					fmt.Printf("  %v |  %v\n", k, v)
+				}
+			}
+		} else {
+			fmt.Println("Failed to resolve a type.")
+		}
+	case args.Search.FullCommand():
+		if *args.SearchString != "" {
+			if *args.SearchQuick {
+				fmt.Println("Quick search not implemented yet")
+			}
+			fmt.Println("Searching for:", *args.SearchString)
+			types, err := SDE.Search(*args.SearchString)
+			if err != nil {
+				fmt.Println("Error searching for types", err.Error())
+				os.Exit(1)
+			}
+			for _, v := range types {
+				fmt.Printf("  %v | %v", v.TypeID, v.GetName())
 			}
 		}
 	default:

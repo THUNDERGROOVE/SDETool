@@ -15,6 +15,7 @@ func Loader(l *lua.LState) {
 		"getVersions": luar.New(l, getVersions),
 		"loadVersion": luar.New(l, loadVersion),
 		"getTypeByID": luar.New(l, getTypeByID),
+		"applyType":   luar.New(l, applyType),
 	}
 	tbl := l.NewTable()
 	l.SetGlobal("sde", tbl)
@@ -32,6 +33,13 @@ func getVersions() []string {
 		out = append(out, k)
 	}
 	return out
+}
+
+func applyType(original sde.SDEType, newType sde.SDEType) sde.SDEType {
+	fmt.Println("[WARN] NotImplemented")
+	fmt.Println(original.GetName())
+	// Do fancy stuff here.
+	return original
 }
 
 func loadVersion(version string) error {

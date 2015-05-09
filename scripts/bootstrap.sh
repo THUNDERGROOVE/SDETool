@@ -6,6 +6,11 @@ exe=$(which go)
 printf "Checking that go is installed..."
 if [ ! -x "$exe" ] ; then
 	echo "You don't have go installed.  FIGURE IT OUT BUDDY"
+	exit 1
+fi
+if [ ! -x "which gcc" ] ; then
+	echo "You don't have GCC installed.  FIGURE IT OUT BUDDY"
+	exit 1
 else
 	printf "✓\n"
 
