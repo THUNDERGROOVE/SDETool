@@ -80,7 +80,7 @@ func main() {
 				os.Exit(1)
 			}
 			for _, v := range types {
-				fmt.Printf("  %v | %v", v.TypeID, v.GetName())
+				fmt.Printf("  %v | %v\n", v.TypeID, v.GetName())
 			}
 		}
 	default:
