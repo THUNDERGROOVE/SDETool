@@ -36,10 +36,14 @@ func getVersions() []string {
 }
 
 func applyType(original sde.SDEType, newType sde.SDEType) sde.SDEType {
-	fmt.Println("[WARN] NotImplemented")
-	fmt.Println(original.GetName())
-	// Do fancy stuff here.
-	return original
+	out, err := sde.ApplyTypeToType(original, newType)
+	if err != nil {
+		fmt.Println("ERROR applying type", err.Error())
+	}
+	if out == nil {
+		fmt.Println("ERROR applyType got a nil SDEType")
+	}
+	return *out
 }
 
 func loadVersion(version string) error {
