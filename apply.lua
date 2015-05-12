@@ -1,0 +1,6 @@
+sde.loadVersion("1.0-WL")
+a = sde.getTypeByID(364022)
+print("Original speed: "..a.Attributes["mVICProp.groundSpeed"])
+p = sde.getTypeByID(351671)
+n = sde.applyType(a, p)
+print("New speed: "..n.Attributes["mVICProp.groundSpeed"])
