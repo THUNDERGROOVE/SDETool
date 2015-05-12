@@ -6,8 +6,10 @@ import (
 	"github.com/THUNDERGROOVE/SDETool/scripting"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
+	"github.com/THUNDERGROOVE/SDETool/util"
 	"gopkg.in/alecthomas/kingpin.v1"
 	"os"
+	"path/filepath"
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
 )
@@ -25,6 +27,21 @@ func main() {
 		fmt.Println("Couldn't open the SDE", err.Error())
 		os.Exit(1)
 	}
+
+	// Attempt to figure out what the fuck to do before kingpin gets involved.
+	if len(os.Args) > 1 {
+		n := os.Args[1]
+		if util.Exists(n) {
+			ext := filepath.Ext(n)[1:]
+			if err := langs.RunScript(ext, n); err != nil {
+				fmt.Println("Error running script", err.Error())
+			}
+			return
+		} else {
+			fmt.Println(n, "doesn't exist")
+		}
+	}
+
 	switch kingpin.MustParse(args.SDETool.Parse(os.Args[1:])) {
 	case args.ListLangs.FullCommand():
 		fmt.Println("Compiled in languages: ")

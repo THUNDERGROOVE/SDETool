@@ -34,7 +34,7 @@ func RunScript(lang, filename string) error {
 		}
 		return v.RunScript(filename)
 	} else {
-		return NoSuchLang
+		return errors.New(NoSuchLang.Error() + ": '" + lang + "'")
 	}
 	return nil
 }
