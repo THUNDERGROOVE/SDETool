@@ -37,8 +37,6 @@ func main() {
 				fmt.Println("Error running script", err.Error())
 			}
 			return
-		} else {
-			fmt.Println(n, "doesn't exist")
 		}
 	}
 
