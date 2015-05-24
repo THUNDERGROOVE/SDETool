@@ -10,6 +10,8 @@ import (
 
 var (
 	ErrTypeDoesNotExist = fmt.Errorf("sde: type does not exist")
+	ErrSDEIsNil         = fmt.Errorf("sde: SDE struct was nil")
+	ErrTypeIsNil        = fmt.Errorf("sde: SDEType struct was nil")
 )
 
 // Load loads an encoding/gob encoded SDE object from file
@@ -70,7 +72,13 @@ type SDE struct {
 
 // GetType returns a pointer to an SDEType or nil and an error
 func (s *SDE) GetType(id int) (sdetype *SDEType, err error) {
+	if s == nil {
+		return nil, ErrSDEIsNil
+	}
 	if v, ok := s.Types[id]; ok {
+		if v == nil {
+			return nil, ErrTypeIsNil
+		}
 		return v, nil
 	} else {
 		return nil, ErrTypeDoesNotExist

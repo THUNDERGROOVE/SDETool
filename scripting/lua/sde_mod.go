@@ -66,15 +66,15 @@ func getVersions() []string {
 	return out
 }
 
-func applyType(original sde.SDEType, newType sde.SDEType) sde.SDEType {
-	out, err := sde.ApplyTypeToType(original, newType)
+func applyType(original *sde.SDEType, newType *sde.SDEType) *sde.SDEType {
+	out, err := sde.ApplyTypeToType(*original, *newType)
 	if err != nil {
 		fmt.Println("ERROR applying type", err.Error())
 	}
 	if out == nil {
 		fmt.Println("ERROR applyType got a nil SDEType")
 	}
-	return *out
+	return out
 }
 
 func loadVersion(version string) error {
