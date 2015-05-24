@@ -2,11 +2,12 @@ package lua
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/util"
 	"github.com/THUNDERGROOVE/SDETool/util/log"
 	"github.com/yuin/gopher-lua"
-	"strings"
 )
 
 func init() {
@@ -18,6 +19,7 @@ type Lua struct {
 	state *lua.LState
 }
 
+// RunScript runs the script at the filename given using the global Lua state
 func (l *Lua) RunScript(filename string) error {
 	if l.state == nil {
 		log.Println("WARNING; lua state is nil")
