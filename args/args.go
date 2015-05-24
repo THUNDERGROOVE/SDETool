@@ -7,6 +7,8 @@ import (
 var (
 	SDETool = kingpin.New("SDETool", "A script enabled SDE lookup tool")
 
+	SDEFile = SDETool.Flag("sde", "A provided SDETool file to open").Short('s').String()
+
 	DoScript     = SDETool.Command("script", "Do a script.")
 	DoScriptFile = DoScript.Arg("file", "A file to run").Required().String()
 	DoScriptLang = DoScript.Arg("lang", "The language to use").Default("lua").String()

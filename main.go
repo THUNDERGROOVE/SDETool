@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/THUNDERGROOVE/SDETool/args"
 	"github.com/THUNDERGROOVE/SDETool/scripting"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/util"
 	"gopkg.in/alecthomas/kingpin.v1"
-	"os"
-	"path/filepath"
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
 )
@@ -22,12 +23,6 @@ var (
 
 func main() {
 	var Type *sde.SDEType
-	SDE, err := sde.Open("1.0-WL")
-	if err != nil {
-		fmt.Println("Couldn't open the SDE", err.Error())
-		os.Exit(1)
-	}
-
 	// Attempt to figure out what the fuck to do before kingpin gets involved.
 	if len(os.Args) > 1 {
 		n := os.Args[1]
@@ -64,10 +59,19 @@ func main() {
 			}
 		}
 	case args.Lookup.FullCommand():
+		if *args.SDEFile == "" {
+			fmt.Println("You must supply an SDEFile using the sde flag")
+			return
+		}
+		SDE, err := sde.Load(*args.SDEFile)
+		if err != nil {
+			fmt.Println("Error while opening the SDE file")
+			return
+		}
 		if *args.LookupTID != 0 {
 			t, err := SDE.GetType(*args.LookupTID)
 			if err == nil {
-				Type = &t
+				Type = t
 			} else {
 				fmt.Println("Couldn't find the type:", *args.LookupTID)
 				os.Exit(1)
@@ -84,6 +88,15 @@ func main() {
 			fmt.Println("Failed to resolve a type.")
 		}
 	case args.Search.FullCommand():
+		if *args.SDEFile == "" {
+			fmt.Println("You must supply an SDEFile using the sde flag")
+			return
+		}
+		SDE, err := sde.Load(*args.SDEFile)
+		if err != nil {
+			fmt.Println("Error while opening the SDE file")
+			return
+		}
 		if *args.SearchString != "" {
 			if *args.SearchQuick {
 				fmt.Println("Quick search not implemented yet")
