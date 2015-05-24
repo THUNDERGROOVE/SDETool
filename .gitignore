@@ -1,7 +1,10 @@
 SDETool
 *.exe
+*.sde
 *.txt
 *.db
 *.zip
 site
 dist
+sdedb
+.gitignore

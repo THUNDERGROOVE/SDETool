@@ -6,7 +6,9 @@ import (
 )
 
 type SDE struct {
-	Types map[int]SDEType
+	Version  string
+	Official bool
+	Types    map[int]SDEType
 }
 
 func Load(filename string) (*SDE, error) {
@@ -16,7 +18,7 @@ func Load(filename string) (*SDE, error) {
 		s := &SDE{}
 		dec := gob.NewDecoder(f)
 		if err := dec.Decode(s); err != nil {
-			return err
+			return nil, err
 		}
 		return s, nil
 	}
@@ -28,7 +30,7 @@ func Save(filename string, s *SDE) error {
 		return err
 	} else {
 		enc := gob.NewEncoder(f)
-		if err := dec.Encode(s); err != nil {
+		if err := enc.Encode(s); err != nil {
 			return err
 		}
 	}
@@ -39,6 +41,13 @@ type SDEType struct {
 	TypeID     int
 	TypeName   string
 	Attributes map[string]interface{}
+}
+
+func (s *SDEType) GetName() string {
+	if v, ok := s.Attributes["mDisplayName"]; ok {
+		return v.(string)
+	}
+	return s.TypeName
 }
 
 func init() {
