@@ -68,6 +68,7 @@ func main() {
 			fmt.Println("Error while opening the SDE file")
 			return
 		}
+		fmt.Printf("SDE file opened using roughly %v bytes of memory\n", SDE.Size())
 		if *args.LookupTID != 0 {
 			t, err := SDE.GetType(*args.LookupTID)
 			if err == nil {
@@ -97,6 +98,7 @@ func main() {
 			fmt.Println("Error while opening the SDE file")
 			return
 		}
+		fmt.Printf("SDE file opened using roughly %v bytes of memory\n", SDE.Size())
 		if *args.SearchString != "" {
 			if *args.SearchQuick {
 				fmt.Println("Quick search not implemented yet")

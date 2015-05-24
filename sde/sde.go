@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -97,6 +98,24 @@ func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 		}
 	}
 	return out, nil
+}
+
+func (s *SDE) Size() int {
+	base := int(reflect.ValueOf(*s).Type().Size())
+	for _, v := range s.Types {
+		vv := int(reflect.ValueOf(*v).Type().Size())
+		for _, a := range v.Attributes {
+			switch reflect.TypeOf(a).Kind() {
+			case reflect.String:
+				vv += len(a.(string))
+				fallthrough
+			default:
+				vv += int(reflect.ValueOf(a).Type().Size())
+			}
+		}
+		base += vv
+	}
+	return base
 }
 
 /*

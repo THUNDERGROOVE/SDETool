@@ -1,9 +1,6 @@
 package sde
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
 func BenchmarkSDEGetType(b *testing.B) {
 	s, err := Load("dust-wl-11.sde")
@@ -12,7 +9,6 @@ func BenchmarkSDEGetType(b *testing.B) {
 		b.Fail()
 	}
 
-	fmt.Println("Getting Assault ak.0 1000 times")
 	b.ResetTimer()
 	for i := 0; i < 1000; i++ {
 		_, err := s.GetType(364022)
