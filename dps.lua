@@ -15,20 +15,8 @@ print("DPS calculator")
 print("--------------")
 print("\nPress ctrl+c to exist at any time.\n")
 
-print("Pick a verison:")
-local v = sde.getVersions()
-
-for i = 1, #v do
-	print("  "..i..") "..v[i])
-end
-
-while true do
-	io.write("> ")
-	ver = tonumber(io.read())
-	if ver == nil then print("Invalid input") else break end
-end
-
-sde.loadVersion(v[ver])
+print("Downloading SDE file")
+sde.loadHTTP("https://dl.dropboxusercontent.com/u/51472257/dust-wl-11.sde")
 
 while true do
 	print("Search:")

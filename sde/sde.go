@@ -3,6 +3,7 @@ package sde
 import (
 	"encoding/gob"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -24,6 +25,16 @@ func Load(filename string) (*SDE, error) {
 		return s, nil
 	}
 	return nil, nil
+}
+
+// LoadReader returns an SDE pointer given an io.Reader to read from
+func LoadReader(r io.Reader) (*SDE, error) {
+	s := &SDE{}
+	dec := gob.NewDecoder(r)
+	if err := dec.Decode(s); err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 
 // Save saves a provided SDE object to disk
@@ -54,13 +65,13 @@ func Save(filename string, s *SDE) error {
 type SDE struct {
 	Version  string
 	Official bool
-	Types    map[int]SDEType
+	Types    map[int]*SDEType
 }
 
 // GetType returns a pointer to an SDEType or nil and an error
 func (s *SDE) GetType(id int) (sdetype *SDEType, err error) {
 	if v, ok := s.Types[id]; ok {
-		return &v, nil
+		return v, nil
 	} else {
 		return nil, ErrTypeDoesNotExist
 	}
@@ -72,8 +83,9 @@ func (s *SDE) GetType(id int) (sdetype *SDEType, err error) {
 func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	out := make([]*SDEType, 0)
 	for _, v := range s.Types {
-		if strings.Contains(v.GetName(), ss) || strings.Contains(v.TypeName, ss) {
-			out = append(out, &v)
+		if strings.Contains(strings.ToLower(v.GetName()), strings.ToLower(ss)) || strings.Contains(strings.ToLower(v.TypeName), strings.ToLower(ss)) {
+			fmt.Printf("Appending %v to slice.\nAddress: %p\n", v.GetName(), &v)
+			out = append(out, v)
 		}
 	}
 	return out, nil

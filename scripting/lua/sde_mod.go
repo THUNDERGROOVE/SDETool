@@ -3,6 +3,7 @@ package lua
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"runtime"
 
 	"github.com/THUNDERGROOVE/SDETool/sde"
@@ -10,12 +11,14 @@ import (
 	"github.com/yuin/gopher-lua"
 )
 
-var SDE sde.SDE
+var SDE *sde.SDE
 
 func Loader(l *lua.LState) {
 	var exports = map[string]lua.LValue{
 		"getVersions": luar.New(l, getVersions),
 		"loadVersion": luar.New(l, loadVersion),
+		"load":        luar.New(l, load),
+		"loadHTTP":    luar.New(l, loadHTTP),
 		"getTypeByID": luar.New(l, getTypeByID),
 		"applyType":   luar.New(l, applyType),
 	}
@@ -27,6 +30,28 @@ func Loader(l *lua.LState) {
 
 	l.SetFuncs(tbl, map[string]lua.LGFunction{
 		"search": search})
+}
+
+func load(filename string) {
+	s, err := sde.Load(filename)
+	if err != nil {
+		fmt.Println("couldn't open SDE file", err.Error())
+		return
+	}
+	SDE = s
+}
+func loadHTTP(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("error getting SDE from url", err.Error())
+		return
+	}
+	s, err := sde.LoadReader(resp.Body)
+	if err != nil {
+		fmt.Println("error reading SDE from url", err.Error())
+		return
+	}
+	SDE = s
 }
 
 func getVersions() []string {
