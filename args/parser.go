@@ -28,6 +28,30 @@ type Scanner struct {
 	index int
 }
 
+type TokLit struct {
+	Token   Token
+	Literal string
+}
+
+type Tokens []TokLit
+
+func (t Tokens) Next(i int) *TokLit {
+	if len(t) < i+1 {
+		return nil
+	}
+	if t[i+1].Token == WHITESPACE {
+		return t.Next(i + 1) // Skip whitespace
+	}
+	return &t[i+1]
+}
+
+func (t Tokens) Prev(i int) *TokLit {
+	if i == 0 {
+		return nil
+	}
+	return &t[i-1]
+}
+
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{r: bufio.NewReader(r)}
 }
@@ -58,19 +82,32 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	if isWhitespace(ch) {
 		s.unread()
 		return s.scanWhitespace()
-	} else if isString(ch) || ch == '"' {
-		s.unread()
-		return s.scanString()
-	} else if isInt(ch) {
-		s.unread()
-		return s.scanInt()
 	} else if isFlag(ch) {
 		s.unread()
 		return s.scanFlag()
+	} else if isInt(ch) {
+		s.unread()
+		return s.scanInt()
+	} else if isString(ch) || ch == '"' {
+		s.unread()
+		return s.scanString()
 	} else if ch == eof {
 		return EOF, "EOF"
 	}
 	return ILLEGAL, string(ch)
+}
+
+func (s *Scanner) ScanAll() Tokens {
+	o := Tokens(make([]TokLit, 0))
+	for {
+		t, l := s.Scan()
+		o = append(o, TokLit{Token: t, Literal: l})
+		if t == EOF || t == ILLEGAL {
+			break
+		}
+	}
+
+	return o
 }
 
 func (s *Scanner) scanWhitespace() (tok Token, lit string) {
@@ -154,7 +191,7 @@ func (s *Scanner) scanInt() (tok Token, lit string) {
 		switch {
 		case !isInt(ch):
 			s.unread()
-			break
+			return INT, buf.String()
 		case isInt(ch):
 			buf.WriteRune(ch)
 		default:
@@ -179,7 +216,7 @@ func (s *Scanner) unread() {
 
 func isWhitespace(ch rune) bool { return ch == ' ' || ch == '\t' || ch == '\n' }
 func isString(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '-' || ch == '_' || ch == '.' || isInt(ch)
 }
 
 func isQuote(ch rune) bool { return ch == '"' }

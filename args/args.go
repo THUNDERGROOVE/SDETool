@@ -1,5 +1,6 @@
 package args
 
+/*
 import (
 	"gopkg.in/alecthomas/kingpin.v1"
 )
@@ -28,3 +29,4 @@ var (
 
 	ListLangs = SDETool.Command("langs", "Lists the compiled in langs")
 )
+*/
