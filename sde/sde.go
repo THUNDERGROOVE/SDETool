@@ -93,7 +93,6 @@ func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	out := make([]*SDEType, 0)
 	for _, v := range s.Types {
 		if strings.Contains(strings.ToLower(v.GetName()), strings.ToLower(ss)) || strings.Contains(strings.ToLower(v.TypeName), strings.ToLower(ss)) {
-			fmt.Printf("Appending %v to slice.\nAddress: %p\n", v.GetName(), &v)
 			out = append(out, v)
 		}
 	}
