@@ -6,14 +6,18 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 
 	"github.com/THUNDERGROOVE/SDETool/args"
 	"github.com/THUNDERGROOVE/SDETool/scripting"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/util"
+	"github.com/nsf/termbox-go"
 	"gopkg.in/alecthomas/kingpin.v1"
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
@@ -85,9 +89,7 @@ func main() {
 		if Type != nil {
 			if *args.LookupAttr {
 				fmt.Printf("Attributes for:\n  %v | %v | %v\n", Type.GetName(), Type.TypeID, Type.TypeName)
-				for k, v := range Type.Attributes {
-					fmt.Printf("  %v |  %v\n", k, v)
-				}
+				cleanPrintAttrs(Type)
 			}
 			if *args.TypeRefers {
 				fmt.Printf("Looking up all types that refer to %v\n", Type.GetName())
@@ -133,4 +135,85 @@ func main() {
 		fmt.Printf("Version %v branch %v commit %v\n", Version, Branch, Commit)
 		fmt.Println("Do --help for help")
 	}
+}
+
+func cleanPrintAttrs(t *sde.SDEType) {
+	width := 0
+	for k, _ := range t.Attributes {
+		if len(k) > width {
+			width = len(k)
+		}
+	}
+	w, _ := GetSize()
+	fmt.Println("Using width of", width)
+	// @TODO: Seriously need to refactor this piece of garbage LOL; But hey it looks pretty
+	// someAttribute---------> Really really really really really really really |
+	//                     |-> really really really really really really really |
+	//                     \-> really really really long text                   |
+	//
+	for k, v := range t.Attributes {
+		switch str := v.(type) {
+		case string:
+			v = interface{}(strings.Replace(str, "\n", " ", -1))
+		}
+		if len(fmt.Sprintf("%v", v)) > w-width-2 {
+			s := splitEvery(fmt.Sprintf("%v", v), w-width-2-6)
+			var once sync.Once
+			for ki, v := range s {
+				var skip bool
+				once.Do(func() {
+					fmt.Printf("  %v> %v\n",
+						k+strings.Repeat("-", width-len(k)),
+						v,
+					)
+
+					skip = true
+				})
+				if skip {
+					continue
+				}
+				if ki == len(s)-1 {
+					fmt.Printf("  %v\\--> %v\n",
+						strings.Repeat(" ", width-3),
+						v,
+					)
+				} else {
+					fmt.Printf("  %v|--> %v\n",
+						strings.Repeat(" ", width-3),
+						v,
+					)
+				}
+				fmt.Print("\n")
+			}
+		} else {
+			fmt.Printf("  %v> %v\n",
+				k+strings.Repeat("-", width-len(k)),
+				v,
+			)
+		}
+	}
+}
+
+func GetSize() (width int, height int) {
+	if err := termbox.Init(); err != nil {
+		panic(err)
+	}
+	w, h := termbox.Size()
+	termbox.Close()
+	return w, h
+}
+
+func splitEvery(s string, i int) []string {
+	o := make([]string, 0)
+	c := int(float64(len(s)) / math.Floor(float64(i)))
+	for off := 0; off < c; off++ {
+		var b int
+		if off == c {
+			b = len(s) - (c * i)
+		} else {
+			b = i
+		}
+		o = append(o, s[off*i:off*i+b])
+	}
+	return o
 }

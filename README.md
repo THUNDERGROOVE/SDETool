@@ -5,6 +5,12 @@ Okay I'm done writing the plain, go only versions.
 This time around SDETool will include built-in scripting capabilities.  
 For now it just has a lua interpreter and to see all of the exposed methods check the [docs](https://github.com/THUNDERGROOVE/SDETool/blob/master/scripting/lua/lua.md)
 
+### Downloads
+
+I have a build server setup that builds SDETool everytime I push code.  You can download windows/amd64 and linux/amd64 builds
+
+[Jenkins](http://ci.maximumtwang.com)
+
 ### Contributing
 
 Want to work on SDETool?  
