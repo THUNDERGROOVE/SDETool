@@ -43,6 +43,8 @@ func main() {
 		}
 	}
 
+	// @TODO:
+	//	Removing kingpin for our own command parser
 	switch kingpin.MustParse(args.SDETool.Parse(os.Args[1:])) {
 	case args.ListLangs.FullCommand():
 		fmt.Println("Compiled in languages: ")
