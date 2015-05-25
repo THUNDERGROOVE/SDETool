@@ -64,7 +64,7 @@ func main() {
 	SDE := &sde.SDE{
 		Version:  *VersionString,
 		Official: *Official,
-		Types:    make(map[int]sde.SDEType),
+		Types:    make(map[int]*sde.SDEType),
 	}
 
 	var i int
@@ -79,7 +79,7 @@ func main() {
 			count,
 			t.TypeID,
 			t.GetName())
-		SDE.Types[t.TypeID] = t
+		SDE.Types[t.TypeID] = &t
 	}
 
 	if err := sde.Save(*OutFile, SDE); err != nil {
