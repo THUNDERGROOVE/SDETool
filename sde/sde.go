@@ -69,6 +69,17 @@ type SDE struct {
 	Version  string
 	Official bool
 	Types    map[int]*SDEType
+	Cache    *Cache
+}
+
+// Cache is a struct that is included within SDE.
+//
+// Whenever an SDE file is loaded we populate this and whenever an SDE is
+// saved we make the pointer nil.  The struct is supposed to provide
+// faster lookups for things like TypeName and mDisplayName
+type Cache struct {
+	TypeNameLookup    map[string]*SDEType
+	DisplayNameLookup map[string]*SDEType
 }
 
 // GetType returns a pointer to an SDEType or nil and an error
@@ -99,6 +110,28 @@ func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	return out, nil
 }
 
+// FindTypeThatReferences returns any time that refers to the given type
+//
+// Suprising how fast this method runs
+//
+// @TODO:
+//	When our caching system is finished update this to not iterate all ~3400 types lol
+func (s *SDE) FindTypesThatReference(t *SDEType) ([]*SDEType, error) {
+	out := make([]*SDEType, 0)
+	for _, v := range s.Types {
+		for _, attr := range v.Attributes {
+			switch tid := attr.(type) {
+			case int:
+				if tid == t.TypeID && !sdeslicecontains(out, tid) {
+					out = append(out, v)
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
+// Size estimates the memory usage of the SDE instance.
 func (s *SDE) Size() int {
 	base := int(reflect.ValueOf(*s).Type().Size())
 	for _, v := range s.Types {
@@ -115,6 +148,37 @@ func (s *SDE) Size() int {
 		base += vv
 	}
 	return base
+}
+
+// Internal methods
+
+// Use whenever possible.  Benchmarks have shown it takes roughly the same
+// amount of time to generate the cache as it does to perform one SDEType
+// level lookup.  Let alone one that looks into SDEType.Attributes
+func (s *SDE) generateCache() {
+	s.Cache = &Cache{}
+	s.Cache.TypeNameLookup = make(map[string]*SDEType)
+	for _, v := range s.Types {
+		s.Cache.TypeNameLookup[v.TypeName] = v
+	}
+}
+
+func (s *SDE) lookupByTypeName(typeName string) (*SDEType, error) {
+	if s.Cache != nil { // Fast lookup
+		if v, ok := s.Cache.TypeNameLookup[typeName]; ok {
+			return v, nil
+		} else {
+			return nil, ErrTypeDoesNotExist
+		}
+	}
+	// Default to slow lookup if cache is nil
+
+	for _, v := range s.Types {
+		if v.TypeName == typeName {
+			return v, nil
+		}
+	}
+	return nil, ErrTypeDoesNotExist
 }
 
 /*
@@ -138,6 +202,19 @@ func (s *SDEType) GetName() string {
 		return v.(string)
 	}
 	return s.TypeName
+}
+
+/*
+	Helpers
+*/
+
+func sdeslicecontains(s []*SDEType, tid int) bool {
+	for _, v := range s {
+		if v.TypeID == tid {
+			return true
+		}
+	}
+	return false
 }
 
 func init() {

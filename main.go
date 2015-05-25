@@ -85,6 +85,17 @@ func main() {
 					fmt.Printf("  %v |  %v\n", k, v)
 				}
 			}
+			if *args.TypeRefers {
+				fmt.Printf("Looking up all types that refer to %v\n", Type.GetName())
+				refs, _ := SDE.FindTypesThatReference(Type)
+				if len(refs) != 0 {
+					for _, v := range refs {
+						fmt.Printf("  [%v] | %v\n", v.TypeID, v.GetName())
+					}
+				} else {
+					fmt.Printf("Found no types that refer to %v\n", Type.GetName())
+				}
+			}
 		} else {
 			fmt.Println("Failed to resolve a type.")
 		}

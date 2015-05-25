@@ -9,6 +9,8 @@ var (
 
 	SDEFile = SDETool.Flag("sde", "A provided SDETool file to open").Short('s').String()
 
+	TypeRefers = SDETool.Flag("refers", "Usable with lookup command.  Lists all the types that refer to the provided type").Bool()
+
 	DoScript     = SDETool.Command("script", "Do a script.")
 	DoScriptFile = DoScript.Arg("file", "A file to run").Required().String()
 	DoScriptLang = DoScript.Arg("lang", "The language to use").Default("lua").String()
