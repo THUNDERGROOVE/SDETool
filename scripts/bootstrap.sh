@@ -26,10 +26,6 @@ else
 	go get github.com/layeh/gopher-luar
 	printf "✓\n"
 
-	printf "gopkg.in/alecthomas/kingpin.v1"
-	go get gopkg.in/alecthomas/kingpin.v1
-	printf "✓\n"
-	
 	echo "Done!"
 	echo "You can now do a make to build"
 fi
