@@ -13,6 +13,8 @@ import (
 
 var SDE *sde.SDE
 
+// @TODO:  Reimplement version api using new system
+
 func Loader(l *lua.LState) {
 	var exports = map[string]lua.LValue{
 		"getVersions": luar.New(l, getVersions),

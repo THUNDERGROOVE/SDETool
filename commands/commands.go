@@ -8,6 +8,10 @@ import (
 
 const halp = `SDETool.  Your one stop shop for everything DUST SDE related.. Hopefully...
 
+SDETool can be called with just the filename of a script like:
+
+SDETool(.exe) dps.lua
+
 Commands:
   search <Name/TypeName/TypeID>:
 	Prints some all matches we can find with their typeIDs
