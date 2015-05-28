@@ -29,13 +29,18 @@ func (f *flagReg) RegisterCmd(command string, fn func(TokLit, int)) {
 	})
 }
 
-func (f *flagReg) Parse(toks Tokens) {
+// Parse parses a set of tokens.
+//
+// Returns true if we dispatched to anything
+func (f *flagReg) Parse(toks Tokens) bool {
+	var didthings bool
 	for k, v := range toks {
 		switch v.Token {
 		case FLAG:
 			for _, fo := range f.flags {
 				if fo.flag == v.Literal || fo.short == v.Literal {
 					fo.fn(v, k)
+					didthings = true
 					break
 				}
 			}
@@ -46,9 +51,11 @@ func (f *flagReg) Parse(toks Tokens) {
 			for _, fo := range f.flags {
 				if v.Literal == fo.flag && fo.command {
 					fo.fn(v, k)
+					didthings = true
 				}
 			}
 			continue
 		}
 	}
+	return didthings
 }

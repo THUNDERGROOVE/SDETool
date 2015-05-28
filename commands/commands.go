@@ -6,8 +6,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool/args"
 )
 
-const halp = `
-SDETool.  Your one stop shop for everything DUST SDE related.. Hopefully...
+const halp = `SDETool.  Your one stop shop for everything DUST SDE related.. Hopefully...
 
 Commands:
   search <Name/TypeName/TypeID>:
@@ -20,10 +19,7 @@ Commands:
 --help(-h):
 	You're looking at it.
 --sde(-s) <Filename>:
-	Loads an SDE version from file bypassing the internal version system
-
-
-`
+	Loads an SDE version from file bypassing the internal version system`
 
 func RegisterCommands(tokens args.Tokens) {
 	RegisterSDE(tokens)

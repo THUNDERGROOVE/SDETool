@@ -49,9 +49,9 @@ func main() {
 
 	commands.RegisterCommands(tl)
 
-	args.FlagReg.Parse(tl)
-
-	fmt.Println("SDETool written by Nick Powell; @THUNDERGROOVE")
-	fmt.Printf("Version %v branch %v commit %v\n", Version, Branch, Commit)
-	fmt.Println("Do --help for help")
+	if !args.FlagReg.Parse(tl) {
+		fmt.Println("SDETool written by Nick Powell; @THUNDERGROOVE")
+		fmt.Printf("Version %v branch %v commit %v\n", Version, Branch, Commit)
+		fmt.Println("Do --help for help")
+	}
 }
