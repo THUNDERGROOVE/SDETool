@@ -1,7 +1,7 @@
 package main
 
 /*
-	@TODO:  Integrate cmd/dumper into the main tool if it is compiled
+	@TODO:  Integrate cmd/dumper into the main tool if it is compiled; I don't wanna ;_;
 */
 
 import (

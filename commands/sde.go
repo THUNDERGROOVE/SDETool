@@ -9,16 +9,36 @@ import (
 
 	"github.com/THUNDERGROOVE/SDETool/args"
 	"github.com/THUNDERGROOVE/SDETool/sde"
+	"github.com/THUNDERGROOVE/SDETool/sde/version"
 	"github.com/nsf/termbox-go"
 )
 
 func RegisterSDE(tl args.Tokens) {
 	var SDE *sde.SDE
 	var Type *sde.SDEType
+
+	// We want to keep the scope; don't want SDE and Type in global space
+	loadlatest := func() {
+		fmt.Printf("Attempting to load latest SDE file\n")
+
+		vers, err := version.LoadVersions()
+		if err != nil {
+			fmt.Printf("Error looking for latest SDE version: [%v]\n", err.Error())
+		}
+		v := findLatestVersion(vers)
+		fmt.Printf("Latest version found: %v\n", v)
+		if err := version.GetVersion(v, vers[v]); err != nil {
+			fmt.Printf("Error getting version: [%v]\n", err.Error())
+		}
+		SDE, err = sde.Load(version.GetVersionPath(vers[v]))
+		if err != nil {
+			fmt.Printf("Error loading SDE file: [%v]\n", err.Error())
+		}
+	}
 	args.FlagReg.RegisterCmd("search", func(tok args.TokLit, index int) {
 		if SDE == nil {
-			fmt.Printf("NO SDE file was loaded\n")
-			return
+			fmt.Printf("NO SDE file was explicitly loaded\n")
+			loadlatest()
 		}
 		if arg := tl.Next(index); arg != nil {
 			switch arg.Token {
@@ -40,8 +60,8 @@ func RegisterSDE(tl args.Tokens) {
 	})
 	args.FlagReg.RegisterCmd("lookup", func(tok args.TokLit, index int) {
 		if SDE == nil {
-			fmt.Printf("No SDE file was loaded\n")
-			return
+			fmt.Printf("No SDE file was explicitly loaded\n")
+			loadlatest()
 		}
 		if arg := tl.Next(index); arg != nil {
 			switch arg.Token {
@@ -94,7 +114,60 @@ func RegisterSDE(tl args.Tokens) {
 			fmt.Printf("No argument supplied for loading an SDE file index: %v\n", index)
 		}
 	})
+	args.FlagReg.Register("--sde-info", "-i", func(tok args.TokLit, index int) {
+		if SDE == nil {
+			fmt.Printf("No SDE file explicitly loaded\n")
+			loadlatest()
+		}
+		offtext := "Official"
+		if !SDE.Official {
+			offtext = "Unofficial"
+		}
 
+		t := len(SDE.Types)
+
+		var attrs int
+		for _, v := range SDE.Types {
+			attrs += len(v.Attributes)
+		}
+
+		fmt.Printf("SDE version %v:%v\n%v types\n%v total attributes", SDE.Version, offtext, t, attrs)
+	})
+}
+
+// parseVersionString attempts to create an integer given a version string for a
+// DUST514 SDE file.  e.g. "Warlords 1.1"
+func parseVersionString(v string) int {
+	var o int
+	one := strings.Split(v, " ")[0]
+	switch one {
+	case "Warlords":
+		o += 1000
+	case "Uprising":
+	}
+
+	two := strings.Split(v, " ")[1]
+	two = strings.Replace(two, ".", "", -1) // Trim .
+	i, _ := strconv.Atoi(two)
+	i += i
+	return o
+}
+
+// Should work eh?
+func findLatestVersion(vers map[string]string) string {
+	var latest string
+	var highest int
+	for k, _ := range vers {
+		i := parseVersionString(k)
+		if i > highest {
+			highest = i
+			latest = k
+		}
+	}
+	if latest != "" {
+		return latest
+	}
+	return "Not even a version string because you gave me an empty map"
 }
 
 func cleanPrintAttrs(t *sde.SDEType) {

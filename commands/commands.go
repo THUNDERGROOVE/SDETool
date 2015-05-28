@@ -19,7 +19,10 @@ Commands:
 --help(-h):
 	You're looking at it.
 --sde(-s) <Filename>:
-	Loads an SDE version from file bypassing the internal version system`
+	Loads an SDE version from file bypassing the internal version system
+--sde-info(-i):
+	Prints various info about the currently loaded SDE file
+`
 
 func RegisterCommands(tokens args.Tokens) {
 	RegisterSDE(tokens)

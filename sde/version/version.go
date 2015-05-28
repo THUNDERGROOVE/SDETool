@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/user"
 	"path/filepath"
 
 	"github.com/THUNDERGROOVE/SDETool/sde"
@@ -60,4 +62,46 @@ func GenVersions() (map[string]string, error) {
 		}
 	}
 	return ver, nil
+}
+
+func GetVersion(v string, file string) error {
+	path := GetVersionPath(file)
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	fmt.Printf("Version %v not downloaded yet\n", v)
+	url := fmt.Sprintf("%v%v", Upstream, file)
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("HTTP 404: Not found: %v", url)
+	}
+
+	data, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(path, data, 0777); err != nil {
+		return err
+	}
+	return nil
+}
+func GetVersionPath(v string) string {
+	if _, err := os.Stat(filepath.Join(getappdatafolder(), ".SDETool")); os.IsNotExist(err) {
+		os.Mkdir(filepath.Join(getappdatafolder(), ".SDETool"), 0777)
+	}
+	f := filepath.Join(getappdatafolder(), ".SDETool", v)
+	return f
+}
+
+func getappdatafolder() string {
+	u, err := user.Current()
+	if err != nil {
+		fmt.Println("ERROR UNABLE TO GET INSTANCE OF USER")
+	}
+	return u.HomeDir
 }
