@@ -134,7 +134,7 @@ func (s *Scanner) scanFlag() (tok Token, lit string) {
 	for {
 		ch := s.read()
 		if ch == eof {
-			break
+			return FLAG, buf.String()
 		}
 		switch {
 		case (!isString(ch) && !isFlag(ch)):
