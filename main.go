@@ -9,11 +9,11 @@ import (
 	"math"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/THUNDERGROOVE/SDETool/args"
+	"github.com/THUNDERGROOVE/SDETool/commands"
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/util"
@@ -29,8 +29,6 @@ var (
 )
 
 func main() {
-	var Type *sde.SDEType
-	var SDE *sde.SDE
 	// Attempt to figure out what the fuck to do before kingpin gets involved.
 	if len(os.Args) > 1 {
 		n := os.Args[1]
@@ -43,9 +41,6 @@ func main() {
 		}
 	}
 
-	// @TODO:
-	//	Finish implementing all the old commands and flags
-
 	c := strings.Join(os.Args[1:], " ")
 	s := args.NewScanner(strings.NewReader(c))
 
@@ -56,86 +51,7 @@ func main() {
 		}
 	}
 
-	args.FlagReg.RegisterCmd("search", func(tok args.TokLit, index int) {
-		if SDE == nil {
-			fmt.Printf("NO SDE file was loaded\n")
-			return
-		}
-		if arg := tl.Next(index); arg != nil {
-			switch arg.Token {
-			case args.STRING:
-				fmt.Printf("Searching using string '%v'\n", arg.Literal)
-				out, err := SDE.Search(arg.Literal)
-				if err != nil {
-					fmt.Printf("Error searching the SDE: %v\n", err.Error())
-				}
-				for _, v := range out {
-					fmt.Printf("  [%v] [%v]\n", v.TypeID, v.GetName())
-				}
-			default:
-				fmt.Printf("search doesn't take a token type of %v\n", arg.Token)
-			}
-		} else {
-			fmt.Printf("No argument was supplied for search\n")
-		}
-	})
-
-	args.FlagReg.RegisterCmd("lookup", func(tok args.TokLit, index int) {
-		if SDE == nil {
-			fmt.Printf("No SDE file was loaded\n")
-			return
-		}
-		if arg := tl.Next(index); arg != nil {
-			switch arg.Token {
-			case args.INT: // Lookup by TypeID
-				fmt.Printf("Looking up by typeID\n")
-				var err error
-				i, _ := strconv.Atoi(arg.Literal)
-				Type, err = SDE.GetType(i)
-				if err != nil {
-					fmt.Printf("Error getting type: [%v]\n", err.Error())
-				}
-			case args.STRING: // Lookup by mDisplayName followed by TypeName if that fails
-				fmt.Printf("Looking up by display name or typename: %v\n", arg.Literal)
-			default:
-				fmt.Printf("Lookup doesn't know how to handle token %v\n", arg.Token)
-			}
-		} else {
-			fmt.Printf("No argument supplied for lookup\n")
-		}
-		if Type == nil {
-			fmt.Printf("Type returned was nil?\n")
-			return
-		}
-		fmt.Printf("%v | %v | %v\n", Type.TypeID, Type.TypeName, Type.GetName())
-		if subcmd := tl.Next(index + 2); subcmd != nil {
-			if subcmd.Token == args.STRING {
-				switch subcmd.Literal {
-				case "attrs":
-					cleanPrintAttrs(Type)
-				default:
-					fmt.Printf("Unknown sub command: '%v'\n", subcmd.Literal)
-				}
-			} else {
-				fmt.Println("Subcommand had type", subcmd.Token)
-			}
-		} else {
-			fmt.Printf("No sub command provided\n")
-		}
-	})
-
-	args.FlagReg.Register("--sde", "-s", func(tok args.TokLit, index int) {
-		if arg := tl.Next(index); arg != nil {
-			var err error
-			fmt.Printf("Loading SDE: %v\n", arg.Literal)
-			SDE, err = sde.Load(arg.Literal)
-			if err != nil {
-				fmt.Printf("Error encoutnered while loading the SDE file:  [%v]\n", err.Error())
-			}
-		} else {
-			fmt.Printf("No argument supplied for loading an SDE file index: %v\n", index)
-		}
-	})
+	commands.RegisterCommands(tl)
 
 	args.FlagReg.Parse(tl)
 

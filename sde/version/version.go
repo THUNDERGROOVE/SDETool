@@ -16,7 +16,7 @@ const (
 )
 
 func LoadVersions() (map[string]string, error) {
-	url := fmt.Sprintf("%v/%v", Upstream, VersionFile)
+	url := fmt.Sprintf("%v%v", Upstream, VersionFile)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

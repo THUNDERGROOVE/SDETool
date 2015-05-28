@@ -4,7 +4,7 @@ SDETool
 *.txt
 *.db
 *.zip
+*.swp
 site
 dist
 sdedb
-.gitignore
