@@ -51,5 +51,13 @@ func GenVersions() (map[string]string, error) {
 			}
 		}
 	}
+	fmt.Println("Saving versions to file")
+	if data, err := json.Marshal(ver); err != nil {
+		fmt.Printf("Error marshaling data %v\n", err.Error())
+	} else {
+		if err := ioutil.WriteFile(VersionFile, data, 0777); err != nil {
+			fmt.Printf("Error writing to file: %v\n", err.Error())
+		}
+	}
 	return ver, nil
 }
