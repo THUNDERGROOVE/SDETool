@@ -1,7 +1,12 @@
 
+-- RoF in rounds/minute
 local function GetRoF(t)
-	if t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_FullAuto" or t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_ChargeToFire" then
+	if t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_FullAuto" then
 		return t.Attributes["mFireMode0.fireInterval"] * 10000
+	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_ChargeToFire" then
+		print(t.Attributes["mFireMode0.fireInterval"])
+		print(t.Attributes["m_ChargeInfo.m_fChargeUpTime"])
+		return (t.Attributes["mFireMode0.fireInterval"] - t.Attributes["m_ChargeInfo.m_fChargeUpTime"]) * 10000
 	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_SingleBurst" then
 		return t.Attributes["m_BurstInfo.m_fBurstInterval"] * 10000
 	else
@@ -16,7 +21,7 @@ print("--------------")
 print("\nPress ctrl+c to exist at any time.\n")
 
 print("Downloading SDE file")
-sde.loadHTTP("https://dl.dropboxusercontent.com/u/51472257/dust-wl-11.sde")
+sde.load("dust-wl-11.sde")
 
 while true do
 	print("Search:")
@@ -37,5 +42,6 @@ while true do
 	local rof = GetRoF(types[v])
 	local dps = (types[v].Attributes["mFireMode0.instantHitDamage"] * rof) / 60 
 	print("RoF: "..rof)
+	print("Damage: "..types[v].Attributes["mFireMode0.instantHitDamage"])
 	print("DPS: "..dps)
 end
