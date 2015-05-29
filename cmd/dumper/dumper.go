@@ -70,15 +70,18 @@ func main() {
 	var i int
 	count := TableSize("CatmaTypes")
 	countWidth := len(strconv.Itoa(count))
-	for t := range out {
+	for tt := range out {
+		t := tt
 		i += 1
 		iwidth := len(strconv.Itoa(i))
 		fmt.Printf("\r                                                                                 ")
-		fmt.Printf("\r[%v/%v] [%v] %v",
+		fmt.Printf("\r[%v/%v] @%p [%v] %v",
 			strings.Repeat(" ", countWidth-iwidth)+strconv.Itoa(i),
 			count,
+			&t,
 			t.TypeID,
-			t.GetName())
+			t.GetName(),
+		)
 		SDE.Types[t.TypeID] = &t
 	}
 

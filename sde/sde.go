@@ -110,6 +110,13 @@ func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	return out, nil
 }
 
+// VerifySDEPrint prints the entire list of types/typeids to check for DB corruption
+func (s *SDE) VerifySDEPrint() {
+	for k, v := range s.Types {
+		fmt.Printf("  [%v][%v] %v at %p\n", k, v.TypeID, v.GetName(), v)
+	}
+}
+
 // FindTypeThatReferences returns any time that refers to the given type
 //
 // Suprising how fast this method runs

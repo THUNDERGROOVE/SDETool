@@ -2,9 +2,8 @@
 
 # This script sets up a nice environment for you to work on SDETool
 
-exe=$(which go)
 printf "Checking that go is installed..."
-if [ ! -x "$exe" ] ; then
+if [ ! -x "which go" ] ; then
 	echo "You don't have go installed.  FIGURE IT OUT BUDDY"
 	exit 1
 fi

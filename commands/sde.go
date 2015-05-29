@@ -45,6 +45,7 @@ func RegisterSDE(tl args.Tokens) {
 			case args.STRING:
 				fmt.Printf("Searching using string '%v'\n", arg.Literal)
 				out, err := SDE.Search(arg.Literal)
+				fmt.Printf("Got %v types\n", len(out))
 				if err != nil {
 					fmt.Printf("Error searching the SDE: %v\n", err.Error())
 				}
@@ -119,6 +120,8 @@ func RegisterSDE(tl args.Tokens) {
 			fmt.Printf("No SDE file explicitly loaded\n")
 			loadlatest()
 		}
+
+		SDE.VerifySDEPrint()
 		offtext := "Official"
 		if !SDE.Official {
 			offtext = "Unofficial"
