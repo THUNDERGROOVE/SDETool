@@ -38,9 +38,16 @@ func main() {
 	}
 
 	c := strings.Join(os.Args[1:], " ")
+	fmt.Println(c)
+	fmt.Println(os.Args[1:])
 	s := args.NewScanner(strings.NewReader(c))
 
 	tl := s.ScanAll()
+
+	for _, v := range tl {
+		fmt.Printf("[%v] [%v]\n", v.Token, v.Literal)
+	}
+
 	for _, v := range tl {
 		if v.Token == args.ILLEGAL {
 			fmt.Printf("Token %v; Literal: '%v'\n", v.Token, v.Literal)

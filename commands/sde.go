@@ -103,6 +103,35 @@ func RegisterSDE(tl args.Tokens) {
 		}
 	})
 
+	args.FlagReg.RegisterCmd("compare", func(tok args.TokLit, index int) {
+		if SDE == nil {
+			fmt.Printf("No SDE file explicitly loaded\n")
+			loadlatest()
+		}
+		var (
+			t  *args.TokLit
+			t2 *args.TokLit
+		)
+		if arg1 := tl.Next(index); arg1 != nil {
+			if arg2 := tl.Next(index + 1); arg2 != nil {
+				t = arg1
+				t2 = arg2
+			} else {
+				fmt.Printf("No second argument given to compare\n")
+				return
+			}
+		} else {
+			fmt.Printf("No first argument given to compare\n")
+			return
+		}
+		switch t.Token {
+		case args.STRING:
+		case args.INT:
+		}
+		_ = t
+		_ = t2
+	})
+
 	args.FlagReg.Register("--sde", "-s", func(tok args.TokLit, index int) {
 		if arg := tl.Next(index); arg != nil {
 			var err error

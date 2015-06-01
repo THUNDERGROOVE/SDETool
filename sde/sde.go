@@ -211,6 +211,26 @@ func (s *SDEType) GetName() string {
 	return s.TypeName
 }
 
+// CompareTo prints the differences between two types
+func (s *SDEType) CompareTo(t *SDEType) {
+	// @TODO: Print differences between typenames/typeid
+	for key, value := range s.Attributes {
+		if v, ok := t.Attributes[key]; ok {
+			if value != v {
+				fmt.Printf("CHANGE: %v: %v\n", value, v)
+			}
+		} else {
+			fmt.Printf("ADD: %v: %v\n", key, value)
+		}
+	}
+	for key, value := range t.Attributes {
+		if _, ok := s.Attributes[key]; ok {
+		} else {
+			fmt.Printf("REMOVE: %v: %v\n", key, value)
+		}
+	}
+}
+
 /*
 	Helpers
 */

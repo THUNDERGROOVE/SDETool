@@ -1,8 +1,12 @@
+// @TODO: Stop rolling our own parser.  Switch to flags flagsets with commands.
+// Might create redundency with flagsets such as --sde.  We will see
+
 package args
 
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"strconv"
 )
@@ -89,8 +93,10 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		s.unread()
 		return s.scanInt()
 	} else if isString(ch) || ch == '"' {
+		return s.scanString(true)
+	} else if isString(ch) && ch != '"' {
 		s.unread()
-		return s.scanString()
+		return s.scanString(false)
 	} else if ch == eof {
 		return EOF, "EOF"
 	}
@@ -148,19 +154,26 @@ func (s *Scanner) scanFlag() (tok Token, lit string) {
 	return ILLEGAL, "Failed to parse flag"
 }
 
-func (s *Scanner) scanString() (tok Token, lit string) {
+func (s *Scanner) scanString(quoteStarted bool) (tok Token, lit string) {
 	var buf bytes.Buffer
 
-	isStr := false
+	var isStr bool
+	if quoteStarted {
+		isStr = true
+	}
 
 	for {
 		ch := s.read()
 		if ch == eof {
 			break
 		}
+		fmt.Printf("Found char '%v': ", string(ch))
+		fmt.Printf("Not in quoted string\n")
 		switch {
+		case (isWhitespace(ch) && isStr):
+			buf.WriteRune(ch)
 		case (!isString(ch) && !isWhitespace(ch) && isStr): // We are in a quoted string and character doesn't match isString
-			break
+			return STRING, buf.String()
 		case (isQuote(ch) && isStr): // Our string's end quote was reached
 			return STRING, buf.String() // Don't write the quote
 		case (isQuote(ch) && !isStr): // Found first string quote
@@ -168,10 +181,6 @@ func (s *Scanner) scanString() (tok Token, lit string) {
 		case (isWhitespace(ch) && !isStr): // Whitespace found while not in a quoted string
 			s.unread()
 			return STRING, buf.String()
-			// Don't behaving this way \/
-			return ILLEGAL, "Cannot have whitespace in string literal without quotes"
-		case (isWhitespace(ch) && isStr):
-			buf.WriteRune(ch)
 		case isString(ch): // Nothing above was reached but still matches isString
 			buf.WriteRune(ch)
 		default: // ILLEGAL token
@@ -203,6 +212,7 @@ func (s *Scanner) scanInt() (tok Token, lit string) {
 func (s *Scanner) read() rune {
 	s.index += 1
 	ch, _, err := s.r.ReadRune()
+	fmt.Printf("read() -> '%v'\n", string(ch))
 	if err != nil {
 		return eof
 	}
@@ -211,7 +221,9 @@ func (s *Scanner) read() rune {
 
 func (s *Scanner) unread() {
 	s.index -= 1
-	_ = s.r.UnreadRune()
+	if err := s.r.UnreadRune(); err != nil {
+		fmt.Printf("Error unreading rune: %v\n", err.Error())
+	}
 }
 
 func isWhitespace(ch rune) bool { return ch == ' ' || ch == '\t' || ch == '\n' }

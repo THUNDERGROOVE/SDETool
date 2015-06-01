@@ -8,7 +8,7 @@ local function GetRoF(t)
 		print(t.Attributes["m_ChargeInfo.m_fChargeUpTime"])
 		return (t.Attributes["mFireMode0.fireInterval"] - t.Attributes["m_ChargeInfo.m_fChargeUpTime"]) * 10000
 	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_SingleBurst" then
-		return t.Attributes["m_BurstInfo.m_fBurstInterval"] * 10000
+		return t.Attributes["mFireMode0.fireInterval"] * 10000
 	else
 		print("Unknown firemode"..t.Attributes["mFireMode0.m_eFireMode"])
 		return 0
@@ -36,12 +36,16 @@ while true do
 	local v = tonumber(io.read())
 	if v == nil then print("Invalid input") break end 
 	if types[v] == nil then print("Invalid input") break end
+	local burst = types[v].Attributes["m_BurstInfo.m_iBurstLength"]
+	local damage = types[v].Attributes["mFireMode0.instantHitDamage"]
 	print("You picked: "..types[v].Attributes.mDisplayName)
 	print("FireMode: "..types[v].Attributes["mFireMode0.m_eFireMode"])
 	print("Burst: "..types[v].Attributes["m_BurstInfo.m_fBurstInterval"] .."  Interval: ".. types[v].Attributes["mFireMode0.fireInterval"])
 	local rof = GetRoF(types[v])
-	local dps = (types[v].Attributes["mFireMode0.instantHitDamage"] * rof) / 60 
+	local dps = ((damage * burst) * rof) / 60 
 	print("RoF: "..rof)
+	print("Burst length: "..burst)
 	print("Damage: "..types[v].Attributes["mFireMode0.instantHitDamage"])
 	print("DPS: "..dps)
+	print("Math: (("..damage.." * "..burst..") * "..rof..") / 60")
 end
