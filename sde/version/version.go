@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/THUNDERGROOVE/SDETool/sde"
 )
@@ -104,4 +106,43 @@ func getappdatafolder() string {
 		fmt.Println("ERROR UNABLE TO GET INSTANCE OF USER")
 	}
 	return u.HomeDir
+}
+
+func LoadLatest() (*sde.SDE, error) {
+	ver, err := LoadVersions()
+	if err != nil {
+		return nil, err
+	}
+	var newest string
+	var n int
+	for k, _ := range ver {
+		veri := parseVersion(k)
+		if veri > n {
+			newest = k
+			n = veri
+		}
+	}
+	if err := GetVersion(newest, ver[newest]); err != nil {
+		return nil, err
+	}
+	path := GetVersionPath(ver[newest])
+	return sde.Load(path)
+}
+
+func parseVersion(v string) int {
+	s := strings.Split(v, " ")
+	up := s[0]
+	ver := s[1]
+	var out int
+	switch up {
+	case "Warlords":
+		out += 1000
+	case "Uprising":
+	default:
+		fmt.Printf("Unknown titled version: %v\n", up)
+	}
+	ver = strings.Replace(ver, ".", "", -1)
+	i, _ := strconv.Atoi(ver)
+	out += i
+	return out
 }
