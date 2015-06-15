@@ -211,6 +211,10 @@ func (s *SDEType) GetName() string {
 	return s.TypeName
 }
 
+func (s *SDEType) GetAttribute(attr string) interface{} {
+	return s.Attributes[attr]
+}
+
 // CompareTo prints the differences between two types
 func (s *SDEType) CompareTo(t *SDEType) {
 	// @TODO: Print differences between typenames/typeid
