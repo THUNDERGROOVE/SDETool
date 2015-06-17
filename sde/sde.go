@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -219,8 +220,16 @@ func (s *SDEType) GetAttribute(attr string) interface{} {
 		return v
 	} else {
 		if v, ok := s.Attributes["mFireMode0.projectileType"]; ok {
-			v, _ := v.(int)
+			v, _ := v.(int) // Ditch ok.  If it fails we get 0 and t will be nil
+			if s.Parent == nil {
+				log.Printf("GetAttributes can't lookup projectile.  Parent is nil\n")
+				return nil
+			}
 			t, _ := s.Parent.GetType(v) // Ditching error because we don't return an error.  I don't want to break SDETool things yet
+			if t == nil {
+				log.Printf("Got nil type.  Returning nil\n")
+				return nil
+			}
 			if v, ok := t.Attributes[attr]; ok {
 				return v
 			}
