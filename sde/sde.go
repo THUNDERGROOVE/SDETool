@@ -91,6 +91,7 @@ func (s *SDE) GetType(id int) (sdetype *SDEType, err error) {
 		if v == nil {
 			return nil, ErrTypeIsNil
 		}
+		v.Parent = s
 		return v, nil
 	} else {
 		return nil, ErrTypeDoesNotExist
@@ -201,6 +202,7 @@ type SDEType struct {
 	TypeID     int
 	TypeName   string
 	Attributes map[string]interface{}
+	Parent     *SDE
 }
 
 // GetName returns the string value of Attributes["mDisplayName"] if it exists.  Otherwise we return TypeName
@@ -211,8 +213,20 @@ func (s *SDEType) GetName() string {
 	return s.TypeName
 }
 
+// GetAttribute checks if the type has the attribute and returns it.  If it doesn't exist we lookup the weapons projectile type
 func (s *SDEType) GetAttribute(attr string) interface{} {
-	return s.Attributes[attr]
+	if v, ok := s.Attributes[attr]; ok {
+		return v
+	} else {
+		if v, ok := s.Attributes["mFireMode0.projectileType"]; ok {
+			v, _ := v.(int)
+			t, _ := s.Parent.GetType(v) // Ditching error because we don't return an error.  I don't want to break SDETool things yet
+			if v, ok := t.Attributes[attr]; ok {
+				return v
+			}
+		}
+	}
+	return nil
 }
 
 // CompareTo prints the differences between two types
