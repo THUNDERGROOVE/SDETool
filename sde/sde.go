@@ -100,19 +100,21 @@ func (s *SDE) GetType(id int) (sdetype *SDEType, err error) {
 
 }
 
-// Search checks for the existance of ss in mDisplayName or TypeName in every type and returns
-// a slice of pointers to SDETypes
+// Search checks for the existance of ss in mDisplayName or TypeName in every
+// type and returns a slice of pointers to SDETypes
 func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	out := make([]*SDEType, 0)
 	for _, v := range s.Types {
-		if strings.Contains(strings.ToLower(v.GetName()), strings.ToLower(ss)) || strings.Contains(strings.ToLower(v.TypeName), strings.ToLower(ss)) {
+		if strings.Contains(strings.ToLower(v.GetName()), strings.ToLower(ss)) ||
+			strings.Contains(strings.ToLower(v.TypeName), strings.ToLower(ss)) {
 			out = append(out, v)
 		}
 	}
 	return out, nil
 }
 
-// VerifySDEPrint prints the entire list of types/typeids to check for DB corruption
+// VerifySDEPrint prints the entire list of types/typeids to check for DB
+// corruption
 func (s *SDE) VerifySDEPrint() {
 	for k, v := range s.Types {
 		fmt.Printf("  [%v][%v] %v at %p\n", k, v.TypeID, v.GetName(), v)
@@ -124,7 +126,8 @@ func (s *SDE) VerifySDEPrint() {
 // Suprising how fast this method runs
 //
 // @TODO:
-//	When our caching system is finished update this to not iterate all ~3400 types lol
+//	When our caching system is finished update this to not iterate all ~3400
+// types lol
 func (s *SDE) FindTypesThatReference(t *SDEType) ([]*SDEType, error) {
 	out := make([]*SDEType, 0)
 	for _, v := range s.Types {
@@ -194,7 +197,8 @@ func (s *SDE) lookupByTypeName(typeName string) (*SDEType, error) {
 	SDEType is a struct representing a single individual type in an SDE.
 	@TODO:
 		Add old methods.
-		Make some cleaner way than before of checking for the existance of *.*... atributes:
+		Make some cleaner way than before of checking for the existance of
+		*.*... atributes:
 		Options:
 			1) Substruct them out and create a parser for each(yuck)
 			2) Map[string]interface{} parser(ehh)
@@ -206,7 +210,8 @@ type SDEType struct {
 	Parent     *SDE
 }
 
-// GetName returns the string value of Attributes["mDisplayName"] if it exists.  Otherwise we return TypeName
+// GetName returns the string value of Attributes["mDisplayName"] if it exists.
+// Otherwise we return TypeName
 func (s *SDEType) GetName() string {
 	if v, ok := s.Attributes["mDisplayName"]; ok {
 		return v.(string)
@@ -214,7 +219,8 @@ func (s *SDEType) GetName() string {
 	return s.TypeName
 }
 
-// GetAttribute checks if the type has the attribute and returns it.  If it doesn't exist we lookup the weapons projectile type
+// GetAttribute checks if the type has the attribute and returns it.
+// If it doesn't exist we lookup the weapons projectile type
 func (s *SDEType) GetAttribute(attr string) interface{} {
 	if v, ok := s.Attributes[attr]; ok {
 		return v
@@ -225,7 +231,9 @@ func (s *SDEType) GetAttribute(attr string) interface{} {
 				log.Printf("GetAttributes can't lookup projectile.  Parent is nil\n")
 				return nil
 			}
-			t, _ := s.Parent.GetType(v) // Ditching error because we don't return an error.  I don't want to break SDETool things yet
+			t, _ := s.Parent.GetType(v)
+			// Ditching error because we don't return an error.
+			// I don't want to break SDETool things yet
 			if t == nil {
 				log.Printf("Got nil type.  Returning nil\n")
 				return nil

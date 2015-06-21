@@ -16,8 +16,9 @@ type Modifier struct {
 	ModifierType      string
 }
 
-// ApplyTypeToType is a function that applies all the attributes given by tone to ttwo and returns the results as a pointer
-// For now it doesn't work for skills.  I'll  likly write a different function for it.
+// ApplyTypeToType is a function that applies all the attributes given by tone
+// to ttwo and returns the results as a pointer For now it doesn't work for
+// skills.  I'll  likly write a different function for it.
 func ApplyTypeToType(tone, ttwo SDEType) (*SDEType, error) {
 	out := &tone
 
@@ -42,9 +43,11 @@ func ApplyTypeToType(tone, ttwo SDEType) (*SDEType, error) {
 		// @TODO: Refactor into it's own function
 		switch v.ModifierType {
 		case "ADD":
-			out.Attributes[v.AttributeName] = modAdd(out.Attributes[v.AttributeName], v.ModifierValue)
+			out.Attributes[v.AttributeName] = modAdd(out.Attributes[v.AttributeName],
+				v.ModifierValue)
 		case "MULTIPLY":
-			out.Attributes[v.AttributeName] = modMult(out.Attributes[v.AttributeName], v.ModifierValue)
+			out.Attributes[v.AttributeName] = modMult(out.Attributes[v.AttributeName],
+				v.ModifierValue)
 		default:
 			return nil, fmt.Errorf("Unsupported modifier: '%v'", v.ModifierType)
 		}
@@ -57,7 +60,9 @@ func ApplyTypeToType(tone, ttwo SDEType) (*SDEType, error) {
 // Generics are for pussies.
 func modAdd(i interface{}, ii float64) interface{} {
 	/*	if reflect.TypeOf(i) != reflect.TypeOf(ii) {
-		log.Println("modAdd called with mismatched types.  WHY?", reflect.TypeOf(i), reflect.TypeOf(ii))
+		log.Println("modAdd called with mismatched types.  WHY?",
+		reflect.TypeOf(i),
+		reflect.TypeOf(ii))
 		return i
 	}*/
 	if i == nil {
@@ -79,7 +84,9 @@ func modAdd(i interface{}, ii float64) interface{} {
 // Generics are for pussies.
 func modMult(i interface{}, ii float64) interface{} {
 	/*	if reflect.TypeOf(i) != reflect.TypeOf(ii) {
-		log.Println("modMult called with mismatched types.  WHY?", reflect.TypeOf(i), reflect.TypeOf(ii))
+		log.Println("modMult called with mismatched types.  WHY?",
+		reflect.TypeOf(i),
+		reflect.TypeOf(ii))
 		return i
 	}*/
 	if i == nil {

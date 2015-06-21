@@ -4,6 +4,8 @@ import (
 	"errors"
 )
 
+// InterpreterNotImplemented is returned when SDETool tries using an interpreter
+// that doen't exist
 var InterpreterNotImplemented = errors.New("interpreter not implemented")
 
 // ScriptingLang is an interface to allow expandability for other scripting languages.
