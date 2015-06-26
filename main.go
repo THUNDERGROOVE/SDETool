@@ -60,29 +60,29 @@ func main() {
 
 	switch os.Args[1] {
 	case "lookup":
-		if err := LookupFlagset.Parse(os.Args[2:]); err != nil {
+		if err := lookupFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args [%v]\n", err.Error())
 		}
 		var err error
 
 		switch {
-		case *LookupSDE != "":
-			SDE, err = sde.Load(*LookupSDE)
+		case *lookupSDE != "":
+			SDE, err = sde.Load(*lookupSDE)
 			fallthrough
-		case *LookupTID != 0:
-			Type, err = SDE.GetType(*LookupTID)
-		case *LookupTN != "":
-			t, err = SDE.Search(*LookupTN)
+		case *lookupTID != 0:
+			Type, err = SDE.GetType(*lookupTID)
+		case *lookupTN != "":
+			t, err = SDE.Search(*lookupTN)
 			if len(t) != 0 {
 				Type = t[0]
 			}
-		case *LookupTD != "":
-			t, err = SDE.Search(*LookupTD)
+		case *lookupTD != "":
+			t, err = SDE.Search(*lookupTD)
 			if len(t) != 0 {
 				Type = t[0]
 			}
 		}
-		if Type != nil && *LookupAttr {
+		if Type != nil && *lookupAttr {
 			for k, v := range Type.Attributes {
 				fmt.Printf(" %v | %v\n", k, v)
 			}
@@ -91,22 +91,22 @@ func main() {
 			fmt.Printf("[ERROR] %v\n", err.Error())
 		}
 	case "search":
-		if err := SearchFlagset.Parse(os.Args[2:]); err != nil {
+		if err := searchFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
 		var err error
 		switch {
-		case *SearchSDE != "":
-			SDE, err = sde.Load(*SearchSDE)
+		case *searchSDE != "":
+			SDE, err = sde.Load(*searchSDE)
 			fallthrough
-		case *SearchName != "":
-			t, err = SDE.Search(*SearchName)
+		case *searchName != "":
+			t, err = SDE.Search(*searchName)
 			if len(t) != 0 {
 				Type = t[0]
 			}
 			MultiTypes = true
 			fallthrough
-		case *SearchAttr == true:
+		case *searchAttr == true:
 			if len(t) == 1 {
 				for k, v := range Type.Attributes {
 					fmt.Printf(" %v| %v\n", k, v)
