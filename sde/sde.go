@@ -28,7 +28,6 @@ func Load(filename string) (*SDE, error) {
 		}
 		return s, nil
 	}
-	return nil, nil
 }
 
 // LoadReader returns an SDE pointer given an io.Reader to read from

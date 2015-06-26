@@ -174,7 +174,7 @@ func Consumer(chans ...chan sde.SDEType) chan sde.SDEType {
 	for _, v := range chans {
 		go func() {
 			for t := range v {
-				out <- t
+				out <- t // Yeah yeah shutup go vet
 			}
 		}()
 	}
