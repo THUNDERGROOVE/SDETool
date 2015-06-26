@@ -19,9 +19,12 @@ import (
 )
 
 var (
+	// Branch is current branch of the git repo
+	Branch string
+	// Version is the latest git tag
 	Version string
-	Branch  string
-	Commit  string
+	// Commit is the "short" hash of the latest git commit
+	Commit string
 )
 
 func main() {
