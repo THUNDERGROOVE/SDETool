@@ -53,7 +53,7 @@ func (l *Lua) Init() error {
 	if l.state == nil {
 		log.Println("[LUA] Error creating VM")
 	}
-	Loader(l.state)
+	loader(l.state)
 	return nil
 }
 

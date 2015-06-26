@@ -7,15 +7,17 @@ import (
 	"runtime"
 
 	"github.com/THUNDERGROOVE/SDETool/sde"
+	"github.com/THUNDERGROOVE/SDETool/sde/version"
 	"github.com/layeh/gopher-luar"
 	"github.com/yuin/gopher-lua"
 )
 
+// SDE is the global SDE object used by functions in the lua runtime
 var SDE *sde.SDE
 
 // @TODO:  Reimplement version api using new system
 
-func Loader(l *lua.LState) {
+func loader(l *lua.LState) {
 	var exports = map[string]lua.LValue{
 		"getVersions": luar.New(l, getVersions),
 		"loadVersion": luar.New(l, loadVersion),
@@ -32,6 +34,18 @@ func Loader(l *lua.LState) {
 
 	l.SetFuncs(tbl, map[string]lua.LGFunction{
 		"search": search})
+}
+
+// loadLatest is exposed to load the latest SDE version.
+//
+// returns true if successful
+func loadLatest() bool {
+	sde, err := version.LoadLatest()
+	if err == nil {
+		SDE = sde
+		return true
+	}
+	return false
 }
 
 func load(filename string) {
@@ -59,7 +73,7 @@ func loadHTTP(url string) {
 func getVersions() []string {
 	depreciated("sde package no longer uses a version system")
 
-	out := make([]string, 0)
+	var out []string
 	/*
 		for k, _ := range sde.Versions {
 			out = append(out, k)
@@ -90,14 +104,12 @@ func loadVersion(version string) error {
 }
 
 func getTypeByID(ID int) *sde.SDEType {
-
-	if t, err := SDE.GetType(ID); err == nil {
+	var t *sde.SDEType
+	var err error
+	if t, err = SDE.GetType(ID); err == nil {
 		return t
-	} else {
-		log.Println("[LUA][MOD] sde.getTypeByID; returned SDEType had error", err.Error())
-		return nil
 	}
-
+	log.Println("[LUA][MOD] sde.getTypeByID; returned SDEType had error", err.Error())
 	return nil
 }
 
@@ -115,6 +127,7 @@ func search(l *lua.LState) int {
 	return 1
 }
 
+// Lack of multiple return values is a real problem in my life
 func depreciated(message string) {
 	pc, _, _, _ := runtime.Caller(1)
 	f := runtime.FuncForPC(pc)
