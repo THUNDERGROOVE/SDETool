@@ -74,7 +74,7 @@ func main() {
 		t := tt
 		i += 1
 		iwidth := len(strconv.Itoa(i))
-		fmt.Printf("\r                                                                                 ")
+		fmt.Printf("\r%s", strings.Repeat(" ", 100))
 		fmt.Printf("\r[%v/%v] @%p [%v] %v",
 			strings.Repeat(" ", countWidth-iwidth)+strconv.Itoa(i),
 			count,

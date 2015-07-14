@@ -27,4 +27,12 @@ var (
 	searchSDE  = searchFlagset.String("sde", "", sdeFlagConst)
 	searchName = searchFlagset.String("t", "", "A string to search for")
 	searchAttr = searchFlagset.Bool("attr", false, "Print's type attributes only if one type is returned by the search")
+
+	dumperFlagset = flag.NewFlagSet("dumper", flag.ContinueOnError)
+
+	dumperInFile        = dumperFlagset.String("i", "", "The input SQLite3 database file the SDE resides in")
+	dumperOutFile       = dumperFlagset.String("o", "", "The output file that is compatible with SDETool")
+	dumperVersionString = dumperFlagset.String("ver", "", "The string encoded into the dump")
+	dumperOfficial      = dumperFlagset.Bool("official", false, "Set this flag if the SQLite db is from CCP")
+	dumperVerbose       = dumperFlagset.Bool("v", false, "Print more stuffs")
 )

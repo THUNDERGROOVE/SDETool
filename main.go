@@ -1,19 +1,18 @@
 package main
 
-/*
-	@TODO:  Integrate cmd/dumper into the main tool if it is compiled and in the
-	path; I don't wanna ;_;
-*/
-
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/sde/version"
 	"github.com/THUNDERGROOVE/SDETool/util"
+
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
 )
@@ -27,16 +26,33 @@ var (
 	Commit string
 )
 
+func loadSDE() *sde.SDE {
+	SDE, err := version.LoadLatest()
+
+	if err != nil {
+		fmt.Printf("[ERROR] %v\n", err.Error())
+		return nil
+	}
+
+	if SDE == nil {
+		fmt.Printf("Failed to automatically load an SDE file.  Please load it manually\n")
+		return nil
+	}
+	return SDE
+}
+
 func main() {
 	// If the first argument is a script then run it instead of parsing things
 	if len(os.Args) > 1 {
 		n := os.Args[1]
-		if util.Exists(n) {
-			ext := filepath.Ext(n)[1:]
-			if err := langs.RunScript(ext, n); err != nil {
-				fmt.Println("Error running script", err.Error())
+		if strings.Contains(n, ".") {
+			if util.Exists(n) {
+				ext := filepath.Ext(n)[1:]
+				if err := langs.RunScript(ext, n); err != nil {
+					fmt.Println("Error running script", err.Error())
+				}
+				return
 			}
-			return
 		}
 	}
 
@@ -49,20 +65,10 @@ func main() {
 	var Type *sde.SDEType
 	var t []*sde.SDEType
 	var MultiTypes bool
-	var err error
-	SDE, err = version.LoadLatest()
-
-	if err != nil {
-		fmt.Printf("[ERROR] %v\n", err.Error())
-	}
-
-	if SDE == nil {
-		fmt.Printf("Failed to automatically load an SDE file.  Please load it manually\n")
-		return
-	}
 
 	switch os.Args[1] {
 	case "lookup":
+		SDE = loadSDE()
 		if err := lookupFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args [%v]\n", err.Error())
 		}
@@ -94,6 +100,7 @@ func main() {
 			fmt.Printf("[ERROR] %v\n", err.Error())
 		}
 	case "search":
+		SDE = loadSDE()
 		if err := searchFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
@@ -120,6 +127,24 @@ func main() {
 				fmt.Printf("[ERROR], %v\n", err.Error())
 			}
 		}
+	case "dump":
+		if err := dumperFlagset.Parse(os.Args[2:]); err != nil {
+			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
+		}
+
+		cmd := exec.Command("sdedumper",
+			"-i", fmt.Sprintf("%s", *dumperInFile),
+			"-o", fmt.Sprintf("%s", *dumperOutFile),
+			"-ver", fmt.Sprintf("%s", *dumperVersionString),
+			"-official", fmt.Sprintf("%t", *dumperOfficial),
+			"-v", fmt.Sprintf("%t", *dumperVerbose))
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); strings.Contains(err.Error(), exec.ErrNotFound.Error()) {
+			fmt.Printf("You do not have sdedumper installed.  Please install\n")
+		} else {
+			log.Printf("Error running sdedumper [%s]", err.Error())
+		}
 	case "help":
 		fmt.Printf(HelpText)
 	default:
@@ -131,7 +156,7 @@ func main() {
 		for _, v := range t {
 			fmt.Printf("%v | %v | %v\n", v.TypeID, v.TypeName, v.GetName())
 		}
-	} else {
+	} else if SDE != nil {
 		fmt.Printf("No type resolved\n")
 	}
 }

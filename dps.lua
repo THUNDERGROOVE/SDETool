@@ -2,17 +2,21 @@
 -- RoF in rounds/minute
 local function GetRoF(t)
 	if t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_FullAuto" then
-		return t.Attributes["mFireMode0.fireInterval"] * 10000
+		return rpmtorof(t.Attributes["mFireMode0.fireInterval"])
 	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_ChargeToFire" then
 		print(t.Attributes["mFireMode0.fireInterval"])
 		print(t.Attributes["m_ChargeInfo.m_fChargeUpTime"])
-		return (t.Attributes["mFireMode0.fireInterval"] - t.Attributes["m_ChargeInfo.m_fChargeUpTime"]) * 10000
+		return rpmtorof(t.Attributes["mFireMode0.fireInterval"] - t.Attributes["m_ChargeInfo.m_fChargeUpTime"])
 	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_SingleBurst" then
-		return t.Attributes["mFireMode0.fireInterval"] * 10000
+		return rpmtorof(t.Attributes["mFireMode0.fireInterval"])
 	else
 		print("Unknown firemode"..t.Attributes["mFireMode0.m_eFireMode"])
 		return 0
 	end
+end
+
+local function rpmtorof(t)
+  return (1*t) / 60
 end
 
 print("--------------")
