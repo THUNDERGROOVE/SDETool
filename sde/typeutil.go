@@ -27,20 +27,14 @@ func ApplyTypeToType(tone, ttwo SDEType) (*SDEType, error) {
 		if strings.Split(k, ".")[0] == "modifier" {
 			index := strings.Split(k, ".")[1]
 			if _, ok := mods[index]; !ok {
-				// @TODO: Refactor this into it's own function
-				mod := Modifier{}
-
-				mod.StackingPenalized, _ = ttwo.Attributes["modifier."+index+".stackingPenalized"].(string)
-				mod.AttributeName, _ = ttwo.Attributes["modifier."+index+".attributeName"].(string)
-				mod.ModifierType, _ = ttwo.Attributes["modifier."+index+".modifierType"].(string)
-				mod.ModifierValue, _ = ttwo.Attributes["modifier."+index+".modifierValue"].(float64)
-				mods[index] = mod
+				mods[index] = modFromType(&ttwo, index)
 			}
 		}
 	}
 
 	for _, v := range mods {
-		// @TODO: Refactor into it's own function
+		// @TODO: Refactor into it's own function.
+		// Going to wait until some reuse case comes up
 		switch v.ModifierType {
 		case "ADD":
 			out.Attributes[v.AttributeName] = modAdd(out.Attributes[v.AttributeName],
@@ -55,6 +49,16 @@ func ApplyTypeToType(tone, ttwo SDEType) (*SDEType, error) {
 
 	return out, nil
 
+}
+
+func modFromType(t *SDEType, index string) Modifier {
+	mod := Modifier{}
+
+	mod.StackingPenalized, _ = t.Attributes["modifier."+index+".stackingPenalized"].(string)
+	mod.AttributeName, _ = t.Attributes["modifier."+index+".attributeName"].(string)
+	mod.ModifierType, _ = t.Attributes["modifier."+index+".modifierType"].(string)
+	mod.ModifierValue, _ = t.Attributes["modifier."+index+".modifierValue"].(float64)
+	return mod
 }
 
 // Generics are for pussies.

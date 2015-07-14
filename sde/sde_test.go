@@ -13,11 +13,9 @@ func BenchmarkSDEGetType(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for i := 0; i < 1000; i++ {
-		_, err := s.GetType(364022)
-		if err != nil {
-			b.Log(err.Error())
-		}
+	_, err = s.GetType(364022)
+	if err != nil {
+		b.Log(err.Error())
 	}
 
 }
@@ -30,9 +28,7 @@ func BenchmarkGenerateCache(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for i := 0; i < 100; i++ {
-		s.generateCache()
-	}
+	s.generateCache()
 }
 
 func BenchmarkCacheTypeNameLookup(b *testing.B) {
@@ -42,14 +38,12 @@ func BenchmarkCacheTypeNameLookup(b *testing.B) {
 		b.Fail()
 	}
 
-	s.generateCache()
+	s.DoCaching(true)
 
 	b.ResetTimer()
-	for i := 0; i < 1000; i++ {
-		_, err := s.lookupByTypeName("arm_assault_am_pro_ak0")
-		if err != nil {
-			b.Log(err.Error())
-		}
+	_, err = s.lookupByTypeName("arm_assault_am_pro_ak0")
+	if err != nil {
+		b.Log(err.Error())
 	}
 }
 
@@ -63,11 +57,9 @@ func BenchmarkTypeNameLookup(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < 1000; i++ {
-		_, err := s.lookupByTypeName("arm_assault_am_pro_ak0")
-		if err != nil {
-			b.Log(err.Error())
-		}
+	_, err = s.lookupByTypeName("arm_assault_am_pro_ak0")
+	if err != nil {
+		b.Log(err.Error())
 	}
 }
 

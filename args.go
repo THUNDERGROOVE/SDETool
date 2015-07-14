@@ -5,7 +5,8 @@ import (
 )
 
 // @TODO:  Maybe convert each flagset into a struct
-
+// Don't see a real benefit at this point other than ease of reading and not
+// over populating the global space
 const (
 	sdeFlagConst     = "An SDE file to load"
 	tidFlagConst     = "A TypeID to lookup"

@@ -19,6 +19,7 @@ const (
 	VersionFile = "versions.json"
 )
 
+// LoadVersions checks the download server for all of the available versions
 func LoadVersions() (map[string]string, error) {
 	url := fmt.Sprintf("%v%v", Upstream, VersionFile)
 	resp, err := http.Get(url)
@@ -36,6 +37,8 @@ func LoadVersions() (map[string]string, error) {
 	return vers, nil
 }
 
+// GenVersions generates a versions map given all the SDE files in the current
+// working directory and marshals it to file.
 func GenVersions() (map[string]string, error) {
 	dirs, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -66,6 +69,7 @@ func GenVersions() (map[string]string, error) {
 	return ver, nil
 }
 
+// GetVersion downloads a given version if possible
 func GetVersion(v string, file string) error {
 	path := GetVersionPath(file)
 	if _, err := os.Stat(path); err == nil {
@@ -92,6 +96,8 @@ func GetVersion(v string, file string) error {
 	}
 	return nil
 }
+
+// GetVersionPath returns where the version files are stored
 func GetVersionPath(v string) string {
 	if _, err := os.Stat(filepath.Join(getappdatafolder(), ".SDETool")); os.IsNotExist(err) {
 		os.Mkdir(filepath.Join(getappdatafolder(), ".SDETool"), 0777)
@@ -108,6 +114,7 @@ func getappdatafolder() string {
 	return u.HomeDir
 }
 
+// LoadLatest loads the latest SDE files available
 func LoadLatest() (*sde.SDE, error) {
 	ver, err := LoadVersions()
 	if err != nil {

@@ -46,6 +46,7 @@ func Save(filename string, s *SDE) error {
 		return err
 	} else {
 		enc := gob.NewEncoder(f)
+		s.Cache = nil // Kill the cache.  Don't want it to be stale do we?
 		if err := enc.Encode(s); err != nil {
 			return err
 		}
@@ -53,18 +54,7 @@ func Save(filename string, s *SDE) error {
 	return nil
 }
 
-/*
-	SDE is a struct that owns every type for a given SDE.
- 		@TODO:
-		Add more old methods:
-			GetTypeByName
-			GetTypeByTag
-			...
-		Add lookups:
-			TypeName
-			Attrribute["mDiplsayName"]
-			Use a map that isn't gobed and generate on load(use goroutine)
-*/
+// SDE is a struct that owns every type for a given SDE.
 type SDE struct {
 	Version  string
 	Official bool
@@ -77,9 +67,11 @@ type SDE struct {
 // Whenever an SDE file is loaded we populate this and whenever an SDE is
 // saved we make the pointer nil.  The struct is supposed to provide
 // faster lookups for things like TypeName and mDisplayName
+//
+// @TODO: Finish implementing Cache relating things
 type Cache struct {
-	TypeNameLookup    map[string]*SDEType
-	DisplayNameLookup map[string]*SDEType
+	TypeNameLookup map[string]*SDEType
+	//DisplayNameLookup map[string]*SDEType Some types have overlapping names
 }
 
 // GetType returns a pointer to an SDEType or nil and an error
@@ -112,6 +104,12 @@ func (s *SDE) Search(ss string) (sdetypes []*SDEType, err error) {
 	return out, nil
 }
 
+// GetTypeByTag @TODO: Finish implementing
+func (s *SDE) GetTypesByTag(tag int) ([]*SDEType, error) { return nil, nil }
+
+// GetTypeByName @TODO: Finish implementing
+func (s *SDE) GetTypeByName(name string) ([]*SDEType, error) { return nil, nil }
+
 // VerifySDEPrint prints the entire list of types/typeids to check for DB
 // corruption
 func (s *SDE) VerifySDEPrint() {
@@ -127,6 +125,7 @@ func (s *SDE) VerifySDEPrint() {
 // @TODO:
 //	When our caching system is finished update this to not iterate all ~3400
 // types lol
+// Not sure how I would cache referencing type attributes.. Hmmm
 func (s *SDE) FindTypesThatReference(t *SDEType) ([]*SDEType, error) {
 	out := make([]*SDEType, 0)
 	for _, v := range s.Types {
@@ -163,17 +162,28 @@ func (s *SDE) Size() int {
 
 // Internal methods
 
+func (s *SDE) cleanCache() {
+	s.Cache = new(Cache)
+	s.Cache.TypeNameLookup = make(map[string]*SDEType)
+}
+
 // Use whenever possible.  Benchmarks have shown it takes roughly the same
 // amount of time to generate the cache as it does to perform one SDEType
 // level lookup.  Let alone one that looks into SDEType.Attributes
 func (s *SDE) generateCache() {
-	s.Cache = &Cache{}
-	s.Cache.TypeNameLookup = make(map[string]*SDEType)
+	s.cleanCache()
 	for _, v := range s.Types {
 		s.Cache.TypeNameLookup[v.TypeName] = v
 	}
 }
 
+func (s *SDE) DoCaching(c bool) {
+	if c {
+		s.generateCache()
+	} else {
+		s.cleanCache()
+	}
+}
 func (s *SDE) lookupByTypeName(typeName string) (*SDEType, error) {
 	if s.Cache != nil { // Fast lookup
 		if v, ok := s.Cache.TypeNameLookup[typeName]; ok {
@@ -192,16 +202,7 @@ func (s *SDE) lookupByTypeName(typeName string) (*SDEType, error) {
 	return nil, ErrTypeDoesNotExist
 }
 
-/*
-	SDEType is a struct representing a single individual type in an SDE.
-	@TODO:
-		Add old methods.
-		Make some cleaner way than before of checking for the existance of
-		*.*... atributes:
-		Options:
-			1) Substruct them out and create a parser for each(yuck)
-			2) Map[string]interface{} parser(ehh)
-*/
+// SDEType is a struct representing a single individual type in an SDE.
 type SDEType struct {
 	TypeID     int
 	TypeName   string
@@ -247,7 +248,12 @@ func (s *SDEType) GetAttribute(attr string) interface{} {
 
 // CompareTo prints the differences between two types
 func (s *SDEType) CompareTo(t *SDEType) {
-	// @TODO: Print differences between typenames/typeid
+	if s.TypeID != t.TypeID {
+		fmt.Printf("TYPEID CHANGE: %v: %v\n", s.TypeID, t.TypeID)
+	}
+	if s.TypeName != t.TypeName {
+		fmt.Printf("TYPENAME CHANGE: %v: %v\n", s.TypeName, s.TypeName)
+	}
 	for key, value := range s.Attributes {
 		if v, ok := t.Attributes[key]; ok {
 			if value != v {
