@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/user"
@@ -114,14 +115,39 @@ func getappdatafolder() string {
 	return u.HomeDir
 }
 
-// LoadLatest loads the latest SDE files available
-func LoadLatest() (*sde.SDE, error) {
-	ver, err := LoadVersions()
+func loadLatestOffline() (*sde.SDE, error) {
+	f, err := ioutil.ReadDir(filepath.Join(getappdatafolder(), ".SDETool"))
 	if err != nil {
 		return nil, err
 	}
 	var newest string
-	var n int
+	n := -1
+	for _, v := range f {
+		if filepath.Ext(v.Name()) == ".sde" && !v.IsDir() {
+			veri := parseVersionFile(v.Name())
+			log.Printf("File %s was given a version of %v", v.Name(), veri)
+			if veri > n {
+				newest = v.Name()
+				n = veri
+			}
+		} else {
+			log.Printf("Skipping %s", v.Name())
+		}
+	}
+	file := filepath.Join(getappdatafolder(), ".SDETool", newest)
+	log.Printf("Attempting to load %v", file)
+	return sde.Load(file)
+}
+
+// LoadLatest loads the latest SDE files available
+func LoadLatest() (*sde.SDE, error) {
+	ver, err := LoadVersions()
+	if err != nil {
+
+		return loadLatestOffline()
+	}
+	var newest string
+	n := -1
 	for k, _ := range ver {
 		veri := parseVersion(k)
 		if veri > n {
@@ -141,10 +167,10 @@ func parseVersion(v string) int {
 	up := s[0]
 	ver := s[1]
 	var out int
-	switch up {
-	case "Warlords":
+	switch strings.ToLower(up) {
+	case "warlords":
 		out += 1000
-	case "Uprising":
+	case "uprising":
 	default:
 		fmt.Printf("Unknown titled version: %v\n", up)
 	}
@@ -152,4 +178,12 @@ func parseVersion(v string) int {
 	i, _ := strconv.Atoi(ver)
 	out += i
 	return out
+}
+
+func parseVersionFile(v string) int {
+	v = strings.Split(v, ".")[0]
+	v = strings.Replace(v, "dust-", "", -1)
+	v = strings.Replace(v, "-", " ", -1)
+
+	return parseVersion(v)
 }

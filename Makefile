@@ -1,6 +1,6 @@
 folder = SDETool-`git rev-parse --abbrev-ref HEAD`-`git describe --abbrev=0`
 all:
-	go build -ldflags "-X main.Commit `git rev-parse --short HEAD` -X main.Branch `git rev-parse --abbrev-ref HEAD` -X main.Version `git describe --abbrev=0`"
+	go build -ldflags "-X main.commit=`git rev-parse --short HEAD` -X main.branch=`git rev-parse --abbrev-ref HEAD` -X main.tagVersion=`git describe --abbrev=0`"
 packagewin: all
 	mkdir $(folder)
 	cp SDETool.exe $(folder)
@@ -20,3 +20,9 @@ packagelinux: all
 	cp scripting/lua/lua.md $(folder)/docs
 	zip -r dist/$(folder).zip $(folder)/
 	rm -rf $(folder)
+clean:
+	rm -f log.txt
+	rm -f SDETool
+	rm -f SDETool.exe
+	rm *.sde
+	rm *.db

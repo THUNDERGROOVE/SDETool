@@ -12,18 +12,15 @@ import (
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/sde/version"
 	"github.com/THUNDERGROOVE/SDETool/util"
-
+	_ "github.com/THUNDERGROOVE/SDETool/util/log"
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
 )
 
 var (
-	// Branch is current branch of the git repo
-	Branch string
-	// Version is the latest git tag
-	Version string
-	// Commit is the "short" hash of the latest git commit
-	Commit string
+	branch     string
+	tagVersion string
+	commit     string
 )
 
 func loadSDE() *sde.SDE {
@@ -69,53 +66,68 @@ func main() {
 	switch os.Args[1] {
 	case "lookup":
 		SDE = loadSDE()
+
 		if err := lookupFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args [%v]\n", err.Error())
 		}
+
 		var err error
 
 		switch {
 		case *lookupSDE != "":
 			SDE, err = sde.Load(*lookupSDE)
 			fallthrough
+
 		case *lookupTID != 0:
 			Type, err = SDE.GetType(*lookupTID)
+
 		case *lookupTN != "":
 			t, err = SDE.Search(*lookupTN)
 			if len(t) != 0 {
 				Type = t[0]
 			}
+
 		case *lookupTD != "":
 			t, err = SDE.Search(*lookupTD)
 			if len(t) != 0 {
 				Type = t[0]
 			}
 		}
+
 		if Type != nil && *lookupAttr {
 			for k, v := range Type.Attributes {
 				fmt.Printf(" %v | %v\n", k, v)
 			}
 		}
+
 		if err != nil {
 			fmt.Printf("[ERROR] %v\n", err.Error())
 		}
+
 	case "search":
 		SDE = loadSDE()
+
 		if err := searchFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
+
 		var err error
+
 		switch {
 		case *searchSDE != "":
 			SDE, err = sde.Load(*searchSDE)
 			fallthrough
+
 		case *searchName != "":
 			t, err = SDE.Search(*searchName)
+
 			if len(t) != 0 {
 				Type = t[0]
 			}
+
 			MultiTypes = true
 			fallthrough
+
 		case *searchAttr == true:
 			if len(t) == 1 {
 				for k, v := range Type.Attributes {
@@ -123,15 +135,18 @@ func main() {
 				}
 				MultiTypes = false
 			}
+
 			if err != nil {
 				fmt.Printf("[ERROR], %v\n", err.Error())
 			}
 		}
+
 	case "dump":
 		if err := dumperFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
 
+		// Is there a better way to do this?
 		cmd := exec.Command("sdedumper",
 			"-i", fmt.Sprintf("%s", *dumperInFile),
 			"-o", fmt.Sprintf("%s", *dumperOutFile),
@@ -140,16 +155,24 @@ func main() {
 			"-v", fmt.Sprintf("%t", *dumperVerbose))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); strings.Contains(err.Error(), exec.ErrNotFound.Error()) {
+
+		err := cmd.Run()
+		if err == nil {
+			break
+		}
+		if strings.Contains(err.Error(), exec.ErrNotFound.Error()) {
 			fmt.Printf("You do not have sdedumper installed.  Please install\n")
 		} else {
 			log.Printf("Error running sdedumper [%s]", err.Error())
 		}
+
 	case "help":
 		fmt.Printf(HelpText)
+
 	default:
 		printNoArgsText()
 	}
+
 	if Type != nil && !MultiTypes {
 		fmt.Printf("%v | %v | %v\n", Type.TypeID, Type.TypeName, Type.GetName())
 	} else if MultiTypes {
@@ -163,6 +186,6 @@ func main() {
 
 func printNoArgsText() {
 	fmt.Println("SDETool written by Nick Powell; @THUNDERGROOVE")
-	fmt.Printf("Version %v branch %v commit %v\n", Version, Branch, Commit)
+	fmt.Printf("Version %v@%v#%v\n", tagVersion, branch, commit)
 	fmt.Println("Do 'help' for help")
 }

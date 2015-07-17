@@ -2,9 +2,9 @@ package langs
 
 import (
 	"errors"
+	"log"
 
 	"github.com/THUNDERGROOVE/SDETool/scripting"
-	"github.com/THUNDERGROOVE/SDETool/util/log"
 )
 
 // ScriptingLangs is a global map that contains all of out registered scripting

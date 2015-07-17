@@ -2,11 +2,11 @@ package lua
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/util"
-	"github.com/THUNDERGROOVE/SDETool/util/log"
 	"github.com/yuin/gopher-lua"
 )
 

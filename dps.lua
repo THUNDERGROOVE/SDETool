@@ -16,6 +16,7 @@ local function GetRoF(t)
 end
 
 local function rpmtorof(t)
+  t = t or 0
   return (1*t) / 60
 end
 

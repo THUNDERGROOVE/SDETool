@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	ErrTypeDoesNotExist = fmt.Errorf("sde: type does not exist")
-	ErrSDEIsNil         = fmt.Errorf("sde: SDE struct was nil")
-	ErrTypeIsNil        = fmt.Errorf("sde: SDEType struct was nil")
+	ErrTypeDoesNotExist    = fmt.Errorf("sde: type does not exist")
+	ErrCacheNotInitialized = fmt.Errorf("sde: cache not initialized")
+	ErrSDEIsNil            = fmt.Errorf("sde: SDE struct was nil")
+	ErrTypeIsNil           = fmt.Errorf("sde: SDEType struct was nil")
 )
 
 // Load loads an encoding/gob encoded SDE object from file
