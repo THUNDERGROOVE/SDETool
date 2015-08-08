@@ -3,8 +3,6 @@ package lua
 import (
 	"fmt"
 	"log"
-	"net/http"
-	"runtime"
 
 	"github.com/THUNDERGROOVE/SDETool/sde"
 	"github.com/THUNDERGROOVE/SDETool/sde/version"
@@ -17,69 +15,51 @@ var SDE *sde.SDE
 
 // @TODO:  Reimplement version api using new system
 
-func loader(l *lua.LState) {
-	var exports = map[string]lua.LValue{
-		"getVersions": luar.New(l, getVersions),
-		"loadVersion": luar.New(l, loadVersion),
-		"load":        luar.New(l, load),
-		"loadHTTP":    luar.New(l, loadHTTP),
-		"getTypeByID": luar.New(l, getTypeByID),
-		"applyType":   luar.New(l, applyType),
-	}
-	tbl := l.NewTable()
-	l.SetGlobal("sde", tbl)
-	for k, v := range exports {
-		l.SetField(tbl, k, v)
+func SDELoader(l *lua.LState)int {
+	// We want to take advantage of the magic of luar for functions that
+	// take or provide complex go types
+	_luaApplyType := luar.New(l, applyType)
+	_luaGetTypeByID := luar.New(l, getTypeByID)
+	
+	var exports = map[string]lua.LGFunction{
+		"load":_luaLoad,
+		"loadLatest":_luaLoadLatest,
+		"search":_luaSearch,
 	}
 
-	l.SetFuncs(tbl, map[string]lua.LGFunction{
-		"search": search})
+	mod := l.NewTable() 
+	l.SetFuncs(mod, exports, lua.LString("value"))
+
+	// Maybe use a map if we get too many of these?
+	l.SetField(mod, "applyType", _luaApplyType)
+	l.SetField(mod, "getTypeByID", _luaGetTypeByID)
+
+	l.Push(mod)
+	return 1
 }
 
-// loadLatest is exposed to load the latest SDE version.
-//
-// returns true if successful
-func loadLatest() bool {
+func _luaLoadLatest(l *lua.LState) int {
 	sde, err := version.LoadLatest()
 	if err == nil {
 		SDE = sde
-		return true
+		l.Push(lua.LTrue)
+		return 1
 	}
-	return false
+	l.Push(lua.LFalse)
+	return 1
 }
 
-func load(filename string) {
+func _luaLoad(l *lua.LState) int {
+	filename := l.ToString(1)
 	s, err := sde.Load(filename)
 	if err != nil {
 		fmt.Println("couldn't open SDE file", err.Error())
-		return
+		l.Push(lua.LFalse)
+		return 1
 	}
 	SDE = s
-}
-func loadHTTP(url string) {
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println("error getting SDE from url", err.Error())
-		return
-	}
-	s, err := sde.LoadReader(resp.Body)
-	if err != nil {
-		fmt.Println("error reading SDE from url", err.Error())
-		return
-	}
-	SDE = s
-}
-
-func getVersions() []string {
-	depreciated("sde package no longer uses a version system")
-
-	var out []string
-	/*
-		for k, _ := range sde.Versions {
-			out = append(out, k)
-		}
-	*/
-	return out
+	l.Push(lua.LTrue)
+	return 1
 }
 
 func applyType(original *sde.SDEType, newType *sde.SDEType) *sde.SDEType {
@@ -93,16 +73,6 @@ func applyType(original *sde.SDEType, newType *sde.SDEType) *sde.SDEType {
 	return out
 }
 
-func loadVersion(version string) error {
-	depreciated("sde package no longer uses a version system")
-	return nil
-	/*
-		var err error
-		SDE, err = sde.Open(version)
-		return err
-	*/
-}
-
 func getTypeByID(ID int) *sde.SDEType {
 	var t *sde.SDEType
 	var err error
@@ -113,7 +83,7 @@ func getTypeByID(ID int) *sde.SDEType {
 	return nil
 }
 
-func search(l *lua.LState) int {
+func _luaSearch(l *lua.LState) int {
 	v := l.ToString(1)
 	t := l.NewTable()
 	if res, err := SDE.Search(v); err == nil {
@@ -127,9 +97,3 @@ func search(l *lua.LState) int {
 	return 1
 }
 
-// Lack of multiple return values is a real problem in my life
-func depreciated(message string) {
-	pc, _, _, _ := runtime.Caller(1)
-	f := runtime.FuncForPC(pc)
-	fmt.Printf("Function: %v is depreciated\n%v\n", f.Name(), message)
-}

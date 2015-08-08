@@ -146,6 +146,7 @@ func main() {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
 
+		// @TODO: Move this to it's own function
 		// Is there a better way to do this?
 		cmd := exec.Command("sdedumper",
 			"-i", fmt.Sprintf("%s", *dumperInFile),

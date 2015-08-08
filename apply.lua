@@ -1,10 +1,14 @@
-print("Downloading an SDE file")
-sde.loadHTTP("https://dl.dropboxusercontent.com/u/51472257/dust-wl-11.sde")
+local sde = require("sde")
+print("Loading an SDE file")
+sde.loadLatest()
+
 print("Looking up an Amarr Assault")
-a = sde.getTypeByID(364022)
+local a = sde.getTypeByID(364022)
 print("Original speed: "..a.Attributes["mVICProp.groundSpeed"])
+
 print("Looking up a complex armor plate")
-p = sde.getTypeByID(351671)
+local p = sde.getTypeByID(351671)
+
 print("Applying the plate to the assault")
-n = sde.applyType(a, p)
+local n = sde.applyType(a, p)
 print("New speed: "..n.Attributes["mVICProp.groundSpeed"])

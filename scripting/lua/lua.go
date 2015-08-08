@@ -53,7 +53,9 @@ func (l *Lua) Init() error {
 	if l.state == nil {
 		log.Println("[LUA] Error creating VM")
 	}
-	loader(l.state)
+
+	l.state.PreloadModule("sde", SDELoader)
+	
 	return nil
 }
 

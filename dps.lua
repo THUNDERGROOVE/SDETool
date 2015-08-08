@@ -1,8 +1,9 @@
+sde = require("sde")
 
 -- RoF in rounds/minute
 local function GetRoF(t)
 	if t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_FullAuto" then
-		return rpmtorof(t.Attributes["mFireMode0.fireInterval"])
+		return rpmtorof(t.Attributes["mFireMode0.fireInterval"]) -- nil pointer?
 	elseif t.Attributes["mFireMode0.m_eFireMode"] == "DWFM_ChargeToFire" then
 		print(t.Attributes["mFireMode0.fireInterval"])
 		print(t.Attributes["m_ChargeInfo.m_fChargeUpTime"])
@@ -23,10 +24,11 @@ end
 print("--------------")
 print("DPS calculator")
 print("--------------")
-print("\nPress ctrl+c to exist at any time.\n")
+print("\nPress ctrl+c to exit at any time.\n")
 
 print("Downloading SDE file")
-sde.load("dust-wl-11.sde")
+
+sde.loadLatest()
 
 while true do
 	print("Search:")
