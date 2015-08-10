@@ -1,3 +1,4 @@
+// Let's add this docstring thingy
 package main
 
 import (
@@ -103,14 +104,17 @@ func main() {
 		if err != nil {
 			fmt.Printf("[ERROR] %v\n", err.Error())
 		}
-
 	case "search":
-		SDE = loadSDE()
-
 		if err := searchFlagset.Parse(os.Args[2:]); err != nil {
 			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 		}
 
+		if *searchName == "" {
+			fmt.Printf("search should be supplied a -t flag\n")
+			return
+		}
+
+		SDE = loadSDE()
 		var err error
 
 		switch {
