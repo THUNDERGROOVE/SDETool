@@ -3,11 +3,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/codegangsta/cli"
 
 	"github.com/THUNDERGROOVE/SDETool/scripting/langs"
 	"github.com/THUNDERGROOVE/SDETool/sde"
@@ -16,6 +18,7 @@ import (
 	_ "github.com/THUNDERGROOVE/SDETool/util/log"
 	// Langs
 	_ "github.com/THUNDERGROOVE/SDETool/scripting/lua"
+	"github.com/d4l3k/messagediff"
 )
 
 var (
@@ -24,19 +27,59 @@ var (
 	commit     string
 )
 
-func loadSDE() *sde.SDE {
-	SDE, err := version.LoadLatest()
+// Matches a TypeID for DUST
+var TypeIDRegex = regexp.MustCompile(`3\d\d\d\d\d`)
 
-	if err != nil {
-		fmt.Printf("[ERROR] %v\n", err.Error())
-		return nil
+/*func dumpSDE() {
+	if err := dumperFlagset.Parse(os.Args[2:]); err != nil {
+		fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
 	}
 
-	if SDE == nil {
-		fmt.Printf("Failed to automatically load an SDE file.  Please load it manually\n")
-		return nil
+	// @TODO: Move this to it's own function
+	// Is there a better way to do this?
+	cmd := exec.Command("sdedumper",
+		"-i", fmt.Sprintf("%s", *dumperInFile),
+		"-o", fmt.Sprintf("%s", *dumperOutFile),
+		"-ver", fmt.Sprintf("%s", *dumperVersionString),
+		"-official", fmt.Sprintf("%t", *dumperOfficial),
+		"-v", fmt.Sprintf("%t", *dumperVerbose))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	err := cmd.Run()
+	if err == nil {
+		break
 	}
-	return SDE
+	if strings.Contains(err.Error(), exec.ErrNotFound.Error()) {
+		fmt.Printf("You do not have sdedumper installed.  Please install\n")
+	} else {
+		log.Printf("Error running sdedumper [%s]", err.Error())
+	}
+}*/
+
+func loadSDE(filename string) *sde.SDE {
+	if filename == "" {
+		SDE, err := version.LoadLatest()
+
+		if err != nil {
+			fmt.Printf("[ERROR] %v\n", err.Error())
+			return nil
+		}
+
+		if SDE == nil {
+			fmt.Printf("Failed to automatically load an SDE file.  Please load it manually\n")
+			return nil
+		}
+		return SDE
+	} else {
+		SDE, err := sde.Load(filename)
+		if err != nil {
+			fmt.Printf("[ERROR] %v\n", err.Error())
+			return nil
+		}
+		return SDE
+	}
+	return nil
 }
 
 func main() {
@@ -59,133 +102,110 @@ func main() {
 		return
 	}
 
-	var SDE *sde.SDE
-	var Type *sde.SDEType
-	var t []*sde.SDEType
-	var MultiTypes bool
+	cmd := cli.NewApp()
+	cmd.Name = "SDETool"
+	cmd.Author = "Nick Powell; @THUNDERGROOVE"
+	cmd.Version = fmt.Sprintf("%v-%v-%v", branch, tagVersion, commit)
+	cmd.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "sdefile, s",
+			Value: "",
+			Usage: "",
+		},
+	}
+	cmd.Commands = []cli.Command{
+		{
+			Name:    "search",
+			Aliases: []string{"s"},
+			Usage:   "search the sde!",
+			Action:  _cliSearchSDE,
+		},
+		{
+			Name:    "lookup",
+			Aliases: []string{"l"},
+			Usage:   "Lookup a specific type",
+			Action:  _cliLookupSDE,
+		},
+		{
+			Name:    "diff",
+			Aliases: []string{"d"},
+			Usage:   "diff two types",
+			Action:  _cliDiff,
+		},
+	}
+	cmd.Run(os.Args)
+}
 
-	switch os.Args[1] {
-	case "lookup":
-		SDE = loadSDE()
+func _cliDiff(c *cli.Context) {
+	file := c.GlobalString("sdefile")
+	SDE := loadSDE(file)
 
-		if err := lookupFlagset.Parse(os.Args[2:]); err != nil {
-			fmt.Printf("[ERROR] Couldn't parse args [%v]\n", err.Error())
-		}
-
-		var err error
-
-		switch {
-		case *lookupSDE != "":
-			SDE, err = sde.Load(*lookupSDE)
-			fallthrough
-
-		case *lookupTID != 0:
-			Type, err = SDE.GetType(*lookupTID)
-
-		case *lookupTN != "":
-			t, err = SDE.Search(*lookupTN)
-			if len(t) != 0 {
-				Type = t[0]
-			}
-
-		case *lookupTD != "":
-			t, err = SDE.Search(*lookupTD)
-			if len(t) != 0 {
-				Type = t[0]
-			}
-		}
-
-		if Type != nil && *lookupAttr {
-			for k, v := range Type.Attributes {
-				fmt.Printf(" %v | %v\n", k, v)
-			}
-		}
-
-		if err != nil {
-			fmt.Printf("[ERROR] %v\n", err.Error())
-		}
-	case "search":
-		if err := searchFlagset.Parse(os.Args[2:]); err != nil {
-			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
-		}
-
-		if *searchName == "" {
-			fmt.Printf("search should be supplied a -t flag\n")
-			return
-		}
-
-		SDE = loadSDE()
-		var err error
-
-		switch {
-		case *searchSDE != "":
-			SDE, err = sde.Load(*searchSDE)
-			fallthrough
-
-		case *searchName != "":
-			t, err = SDE.Search(*searchName)
-
-			if len(t) != 0 {
-				Type = t[0]
-			}
-
-			MultiTypes = true
-			fallthrough
-
-		case *searchAttr == true:
-			if len(t) == 1 {
-				for k, v := range Type.Attributes {
-					fmt.Printf(" %v| %v\n", k, v)
-				}
-				MultiTypes = false
-			}
-
-			if err != nil {
-				fmt.Printf("[ERROR], %v\n", err.Error())
-			}
-		}
-
-	case "dump":
-		if err := dumperFlagset.Parse(os.Args[2:]); err != nil {
-			fmt.Printf("[ERROR] Couldn't parse args[%v]\n", err.Error())
-		}
-
-		// @TODO: Move this to it's own function
-		// Is there a better way to do this?
-		cmd := exec.Command("sdedumper",
-			"-i", fmt.Sprintf("%s", *dumperInFile),
-			"-o", fmt.Sprintf("%s", *dumperOutFile),
-			"-ver", fmt.Sprintf("%s", *dumperVersionString),
-			"-official", fmt.Sprintf("%t", *dumperOfficial),
-			"-v", fmt.Sprintf("%t", *dumperVerbose))
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		err := cmd.Run()
-		if err == nil {
-			break
-		}
-		if strings.Contains(err.Error(), exec.ErrNotFound.Error()) {
-			fmt.Printf("You do not have sdedumper installed.  Please install\n")
-		} else {
-			log.Printf("Error running sdedumper [%s]", err.Error())
-		}
-
-	case "help":
-		fmt.Printf(HelpText)
-
-	default:
-		printNoArgsText()
+	t1 := c.Args().Get(0)
+	t2 := c.Args().Get(1)
+	if t1 == t2 {
+		fmt.Printf("Why are you trying to compare two of the same types?\n")
 	}
 
-	if Type != nil && !MultiTypes {
-		fmt.Printf("%v | %v | %v\n", Type.TypeID, Type.TypeName, Type.GetName())
-	} else if MultiTypes {
-		for _, v := range t {
-			fmt.Printf("%v | %v | %v\n", v.TypeID, v.TypeName, v.GetName())
+	if !TypeIDRegex.Match([]byte(t1)) || !TypeIDRegex.Match([]byte(t2)) {
+		fmt.Printf("One of the given typeIDs were not valid\n")
+	}
+
+	tid1, _ := strconv.Atoi(t1)
+	tid2, _ := strconv.Atoi(t2)
+
+	tt1, err := SDE.GetType(tid1)
+	if err != nil {
+		fmt.Printf("[ERROR] failed to get first type: %v\n", err.Error())
+	}
+
+	tt2, err := SDE.GetType(tid2)
+	if err != nil {
+		fmt.Printf("[ERROR] failed to get second type: %v\n", err.Error())
+	}
+
+	diff, equal := messagediff.PrettyDiff(tt1, tt2)
+	fmt.Printf("Equal?: %v\n", equal)
+	fmt.Printf("\n\n%v\n\n", diff)
+}
+
+func _cliLookupSDE(c *cli.Context) {
+	file := c.GlobalString("sdefile")
+	SDE := loadSDE(file)
+
+	s := c.Args().First()
+	if !TypeIDRegex.Match([]byte(s)) {
+		fmt.Printf("Not recognized as a typeID doing a search instead and using the first result\n")
+
+		res, err := SDE.Search(s)
+		if err != nil {
+			fmt.Printf("[ERROR] failed getting type: %v\n", err.Error())
+			return
 		}
-	} else if SDE != nil {
-		fmt.Printf("No type resolved\n")
+		t := res[0]
+		fmt.Printf("[ %v | %v | %v ]\n", t.TypeID, t.TypeName, t.GetName())
+		return
+	}
+	id, _ := strconv.Atoi(s)
+	t, err := SDE.GetType(id)
+	if err != nil {
+		fmt.Printf("[ERROR] failed getting type: %v\n", err.Error())
+		return
+	}
+	fmt.Printf("[ %v | %v | %v ]\n", t.TypeID, t.TypeName, t.GetName())
+}
+
+func _cliSearchSDE(c *cli.Context) {
+	file := c.GlobalString("sdefile")
+	SDE := loadSDE(file)
+
+	s := c.Args().First()
+	values, err := SDE.Search(s)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to search: %v\n", err.Error())
+	}
+
+	for _, v := range values {
+		fmt.Printf("[ %v | %v | %v ]\n", v.TypeID, v.TypeName, v.GetName())
 	}
 }
 
